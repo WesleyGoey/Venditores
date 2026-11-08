@@ -28,3 +28,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('events/{event}/completion', [EventCompletionController::class, 'store'])->name('events.completion.store');
     Route::delete('events/{event}/completion', [EventCompletionController::class, 'destroy'])->name('events.completion.destroy');
+});
