@@ -44,7 +44,31 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Build a Gemini generateContent response body whose text part is the given JSON.
+ *
+ * @param  array<string, mixed>  $json
+ * @return array<string, mixed>
+ */
+function geminiResponse(array $json): array
 {
-    // ..
+    return [
+        'candidates' => [
+            [
+                'content' => [
+                    'role' => 'model',
+                    'parts' => [['text' => json_encode($json)]],
+                ],
+                'finishReason' => 'STOP',
+            ],
+        ],
+    ];
+}
+
+/**
+ * The Gemini endpoint every AI feature calls.
+ */
+function geminiEndpoint(): string
+{
+    return 'generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 }
