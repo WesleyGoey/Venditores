@@ -1,6 +1,8 @@
 <?php
 
+
 return [
+
 
     /*
     |--------------------------------------------------------------------------
@@ -13,7 +15,9 @@ return [
     |
     */
 
+
     'default' => env('FILESYSTEM_DISK', 'local'),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -28,7 +32,9 @@ return [
     |
     */
 
+
     'disks' => [
+
 
         'local' => [
             'driver' => 'local',
@@ -37,6 +43,7 @@ return [
             'throw' => false,
         ],
 
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
@@ -44,6 +51,7 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+
 
         's3' => [
             'driver' => 's3',
@@ -57,7 +65,36 @@ return [
             'throw' => false,
         ],
 
+
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'),
+            'secret' => env('SUPABASE_STORAGE_SECRET'),
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-southeast-1'),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', 'proposals'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT'),
+            'use_path_style_endpoint' => true,
+            'visibility' => 'private',
+            'throw' => true,
+        ],
+
+
     ],
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Proposal Disk
+    |--------------------------------------------------------------------------
+    |
+    | The disk where uploaded event proposal PDFs are stored. Use "supabase"
+    | in production and "local" for development without Supabase access.
+    |
+    */
+
+
+    'proposal_disk' => env('PROPOSAL_DISK', 'local'),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -70,8 +107,10 @@ return [
     |
     */
 
+
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
+
 
 ];
