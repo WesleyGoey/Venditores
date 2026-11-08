@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\GeminiException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,5 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (GeminiException $exception) {
+            return back()->with('error', $exception->getMessage());
+        });
     })->create();
