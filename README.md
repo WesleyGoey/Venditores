@@ -20,23 +20,20 @@ Project ini dibuat untuk tugas akhir mata kuliah Cloud Computing, Universitas Ci
 ## Progres fitur
 
 
-Status per Sabtu, 7 November 2026. Tabel ini diperbarui di README final.
-
-
-| Fitur | Keterangan | PIC | Target | Status |
-|-------|------------|-----|--------|--------|
-| Fondasi project | Upgrade ke Laravel 13, konfigurasi Purelymail, Supabase, Gemini, branding Venditores, halaman landing | Angga | Sabtu | ✅ Selesai |
-| Struktur data | Tabel & model event, kebutuhan vendor, penawaran; enum status | Wesley | Sabtu | ✅ Selesai |
-| Inti AI | Gemini client, `BudgetAllocator`, `MatchScoreCalculator`, `RiskMonitor` + unit test | Keane | Sabtu | ✅ Selesai |
-| Akun & verifikasi email | Daftar, login, verifikasi email lewat Purelymail | Angga & Wesley | Sabtu | ✅ Selesai |
-| Kelola event | CRUD event + unggah proposal PDF (privat, maks. 10 MB) | Wesley | Minggu | ⏳ Belum |
-| Analisis proposal dengan AI | Gemini membaca PDF dan menyusun kebutuhan vendor + persentase anggaran | Keane | Minggu | ⏳ Belum |
-| Kebutuhan vendor & penawaran | CRUD kebutuhan, status pengadaan, catat & terima/tolak penawaran | Angga | Minggu | ⏳ Belum |
-| Saran risiko & AI matching | Rekomendasi risiko dari Gemini, skor kecocokan penawaran 60% spesifikasi + 40% anggaran | Keane | Minggu–Senin | ⏳ Belum |
-| Halaman detail event & kebutuhan | Tampilan detail event, daftar kebutuhan, perbandingan penawaran | Wesley & Keane | Senin | ⏳ Belum |
-| Dashboard | Ringkasan event, kebutuhan kritis, peringatan risiko | Angga | Senin | ⏳ Belum |
-| Test fitur & data demo | Feature test semua fitur, seeder akun demo | Semua | Selasa | ⏳ Belum |
-| Deploy | CloudPanel + Supabase | Angga | Selasa | ⏳ Belum |
+| Fitur | Keterangan | Status |
+|-------|------------|--------|
+| Akun & verifikasi email | Daftar, login, reset password, dan verifikasi email (starter kit Laravel). Email dikirim lewat Purelymail. | ✅ Selesai |
+| Kelola event | Buat, lihat, ubah, hapus event: nama, tanggal, lokasi, total anggaran, deskripsi, dan proposal PDF (maks. 10 MB). Proposal disimpan privat dan hanya bisa diunduh pemiliknya. | ✅ Selesai |
+| Analisis proposal dengan AI | Gemini membaca PDF proposal, menulis ringkasan, skala acara, perkiraan jumlah peserta, dan daftar kategori vendor beserta persentase anggaran. | ✅ Selesai |
+| Pembagian anggaran otomatis | Persentase dari Gemini diubah menjadi Rupiah oleh `BudgetAllocator` (PHP), sehingga totalnya selalu tepat sama dengan anggaran event. | ✅ Selesai |
+| Kebutuhan vendor | Tambah, ubah, hapus kebutuhan secara manual; tandai kebutuhan vital; ubah status pengadaan (Drafting → Searching → Quoted → Deal → Paid). | ✅ Selesai |
+| Penawaran vendor | Catat penawaran (nama vendor, kontak, harga, catatan), terima atau tolak penawaran. | ✅ Selesai |
+| AI matching penawaran | Gemini menilai kecocokan spesifikasi tiap penawaran; PHP menghitung skor anggaran; skor akhir = 60% spesifikasi + 40% anggaran. | ✅ Selesai |
+| Pemantauan risiko | Status risiko dari sisa hari: Urgent (≤ 30 hari), Warning (≤ 60 hari), Low. Ditambah daftar kebutuhan vital yang belum aman. | ✅ Selesai |
+| Saran risiko dari AI | Gemini memberi ringkasan risiko dan rekomendasi langkah berdasarkan kondisi pengadaan event. | ✅ Selesai |
+| Dashboard | Ringkasan semua event: jumlah event, kebutuhan, penawaran, dan total anggaran; jumlah per status; kebutuhan kritis yang belum aman; peringatan risiko event terdekat. | ✅ Selesai |
+| Batas pemakaian AI | Per pengguna per menit: analisis 5x, matching 10x, saran risiko 5x. | ✅ Selesai |
+| Deploy | CloudPanel (https://venditores.fsd.my.id), database Supabase Postgres, file proposal di Supabase Storage. Dikerjakan Angga setelah merge final. | 🚀 Siap deploy |
 
 
 ## Cara kerja AI
@@ -102,7 +99,11 @@ touch database/database.sqlite   # Windows PowerShell: New-Item database/databas
 php artisan migrate
 
 
-# 7. Jalankan aplikasi
+# 7. (Opsional) isi data demo
+php artisan db:seed
+
+
+# 8. Jalankan aplikasi
 composer run dev
 ```
 
@@ -118,10 +119,10 @@ Buka http://127.0.0.1:8000. `composer run dev` menjalankan server Laravel, Vite,
 - `PROPOSAL_DISK=local` (bawaan): proposal disimpan di `storage/app/private/proposals`.
 
 
-### Akun untuk mencoba
+### Akun demo
 
 
-Daftar akun baru di `/register`, lalu buka link verifikasi yang tertulis di `storage/logs/laravel.log`. Seeder akun demo menyusul di hari Selasa.
+Setelah `php artisan db:seed`, login dengan `test@example.com` / `password`. Akun ini sudah terverifikasi dan punya satu event contoh lengkap dengan kebutuhan dan penawaran. Seeder ini **hanya untuk lokal**, jangan dijalankan di server.
 
 
 ### Setelah `git pull`
