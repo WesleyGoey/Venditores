@@ -44,6 +44,7 @@ class QuoteController extends Controller
     public function update(UpdateQuoteRequest $request, Event $event, VendorNeed $vendorNeed, Quote $quote): RedirectResponse
     {
         $quote->fill($request->validated());
+        $previousStatus = $quote->getOriginal('status');
 
 
         if ($quote->isDirty('price') && $quote->spec_score !== null) {
@@ -59,6 +60,11 @@ class QuoteController extends Controller
         }
 
 
+        if ($quote->wasChanged('status')) {
+            $vendorNeed->stepBackAfterQuoteChange($previousStatus);
+        }
+
+
         return back()->with('success', 'Quote updated.');
     }
 
@@ -71,7 +77,13 @@ class QuoteController extends Controller
         Gate::authorize('update', $event);
 
 
+        $previousStatus = $quote->status;
+
+
         $quote->delete();
+
+
+        $vendorNeed->stepBackAfterQuoteChange($previousStatus);
 
 
         return back()->with('success', 'Quote deleted.');

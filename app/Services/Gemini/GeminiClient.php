@@ -80,6 +80,71 @@ class GeminiClient
         return $decoded;
     }
 
+    /**
+     * Ask Gemini a question with Google Search grounding enabled.
+     *
+     * Search grounding cannot be combined with a response schema, so the
+     * answer comes back as plain text plus the web pages Gemini consulted.
+     *
+     * @return array{text: string, sources: list<array{title: string, url: string}>}
+     *
+     * @throws GeminiException
+     */
+    public function generateGrounded(string $prompt, ?string $systemInstruction = null): array
+    {
+        $apiKey = config('services.gemini.key');
+
+        if (blank($apiKey)) {
+            throw GeminiException::missingApiKey();
+        }
+
+        $payload = [
+            'contents' => [
+                ['role' => 'user', 'parts' => [['text' => $prompt]]],
+            ],
+            'tools' => [['google_search' => (object) []]],
+        ];
+
+        if ($systemInstruction !== null) {
+            $payload['systemInstruction'] = ['parts' => [['text' => $systemInstruction]]];
+        }
+
+        try {
+            $response = Http::withHeaders(['x-goog-api-key' => $apiKey])
+                ->acceptJson()
+                ->connectTimeout(10)
+                ->timeout(config('services.gemini.timeout'))
+                ->retry([2000, 5000], 0, fn (Throwable $exception): bool => $this->shouldRetry($exception))
+                ->post($this->endpoint(), $payload)
+                ->throw();
+        } catch (RequestException $exception) {
+            throw GeminiException::requestFailed($exception->response->status(), $exception);
+        } catch (ConnectionException $exception) {
+            throw GeminiException::unreachable($exception);
+        }
+
+        $text = collect($response->json('candidates.0.content.parts', []))
+            ->pluck('text')
+            ->filter()
+            ->implode('');
+
+        if ($text === '') {
+            throw GeminiException::emptyResponse();
+        }
+
+        $sources = collect($response->json('candidates.0.groundingMetadata.groundingChunks', []))
+            ->map(fn (array $chunk): array => [
+                'title' => (string) ($chunk['web']['title'] ?? ''),
+                'url' => (string) ($chunk['web']['uri'] ?? ''),
+            ])
+            ->filter(fn (array $source): bool => preg_match('#^https?://#i', $source['url']) === 1)
+            ->unique('url')
+            ->values()
+            ->all();
+
+        return ['text' => $text, 'sources' => $sources];
+    }
+
     private function endpoint(): string
     {
         return sprintf(

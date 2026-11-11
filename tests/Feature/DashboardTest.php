@@ -38,7 +38,7 @@ test('stats and status counts only include the user\'s own data', function () {
             ->where('stats', ['events' => 2, 'vendor_needs' => 1, 'quotes' => 1, 'total_budget' => 60_000_000])
             ->where('eventStatusCounts.0', ['value' => 'draft', 'label' => 'Draft', 'count' => 1])
             ->where('eventStatusCounts.1', ['value' => 'analyzed', 'label' => 'Analyzed', 'count' => 1])
-            ->where('procurementStatusCounts.2', ['value' => 'quoted', 'label' => 'Quoted', 'count' => 1]));
+            ->where('procurementStatusCounts.2', ['value' => 'quoted', 'label' => 'Comparing offers', 'count' => 1]));
 });
 
 

@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatDaysRemaining, formatRupiah } from '@/lib/format';
+import { eventMeta, procurementMeta } from '@/lib/status-meta';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type EventStatus, type ProcurementStatus, type RiskAssessment } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { AlertTriangle, CalendarDays, CalendarPlus, ClipboardList, FileText, Wallet } from 'lucide-react';
-
 
 interface StatusCount<T extends string> {
     value: T;
@@ -15,13 +15,11 @@ interface StatusCount<T extends string> {
     count: number;
 }
 
-
 interface EventSummary {
     id: number;
     name: string;
     event_date: string;
 }
-
 
 interface CriticalNeed {
     id: number;
@@ -32,7 +30,6 @@ interface CriticalNeed {
     event: EventSummary;
 }
 
-
 interface DashboardProps {
     stats: { events: number; vendor_needs: number; quotes: number; total_budget: number };
     eventStatusCounts: StatusCount<EventStatus>[];
@@ -41,24 +38,27 @@ interface DashboardProps {
     warnings: (RiskAssessment & { event: EventSummary })[];
 }
 
-
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
-
-function StatusBreakdown<T extends string>({ items }: { items: StatusCount<T>[] }) {
+function StatusBreakdown<T extends string>({ items, solid }: { items: StatusCount<T>[]; solid: (value: T) => string }) {
     const total = items.reduce((sum, item) => sum + item.count, 0);
-
 
     return (
         <ul className="space-y-3">
             {items.map((item) => (
                 <li key={item.value} className="space-y-1">
                     <div className="flex justify-between text-sm">
-                        <span>{item.label}</span>
+                        <span className="flex items-center gap-2">
+                            <span className={cn('size-2 rounded-full', solid(item.value))} aria-hidden />
+                            {item.label}
+                        </span>
                         <span className="font-medium tabular-nums">{item.count}</span>
                     </div>
                     <div className="bg-muted h-1.5 overflow-hidden rounded-full">
-                        <div className="bg-primary h-full rounded-full" style={{ width: total > 0 ? `${(item.count / total) * 100}%` : '0%' }} />
+                        <div
+                            className={cn('h-full rounded-full', solid(item.value))}
+                            style={{ width: total > 0 ? `${(item.count / total) * 100}%` : '0%' }}
+                        />
                     </div>
                 </li>
             ))}
@@ -66,15 +66,37 @@ function StatusBreakdown<T extends string>({ items }: { items: StatusCount<T>[] 
     );
 }
 
-
 export default function Dashboard({ stats, eventStatusCounts, procurementStatusCounts, criticalNeeds, warnings }: DashboardProps) {
     const statCards = [
-        { label: 'Events', value: stats.events.toLocaleString('id-ID'), icon: CalendarDays },
-        { label: 'Vendor needs', value: stats.vendor_needs.toLocaleString('id-ID'), icon: ClipboardList },
-        { label: 'Quotes received', value: stats.quotes.toLocaleString('id-ID'), icon: FileText },
-        { label: 'Total budget', value: formatRupiah(stats.total_budget), icon: Wallet },
+        {
+            label: 'Events',
+            value: stats.events.toLocaleString('id-ID'),
+            icon: CalendarDays,
+            tone: 'from-indigo-500 to-violet-500',
+            card: 'border-t-indigo-500',
+        },
+        {
+            label: 'Vendor needs',
+            value: stats.vendor_needs.toLocaleString('id-ID'),
+            icon: ClipboardList,
+            tone: 'from-sky-500 to-cyan-500',
+            card: 'border-t-sky-500',
+        },
+        {
+            label: 'Quotes received',
+            value: stats.quotes.toLocaleString('id-ID'),
+            icon: FileText,
+            tone: 'from-amber-500 to-orange-500',
+            card: 'border-t-amber-500',
+        },
+        {
+            label: 'Total budget',
+            value: formatRupiah(stats.total_budget),
+            icon: Wallet,
+            tone: 'from-emerald-500 to-teal-500',
+            card: 'border-t-emerald-500',
+        },
     ];
-
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -93,14 +115,20 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                     </Button>
                 </div>
 
-
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {statCards.map((stat) => (
-                        <Card key={stat.label}>
+                        <Card key={stat.label} className={cn('border-t-4', stat.card)}>
                             <CardContent className="space-y-1 p-5">
                                 <div className="text-muted-foreground flex items-center justify-between gap-2 text-sm">
                                     <span>{stat.label}</span>
-                                    <stat.icon className="size-4 shrink-0" />
+                                    <span
+                                        className={cn(
+                                            'flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm',
+                                            stat.tone,
+                                        )}
+                                    >
+                                        <stat.icon className="size-4" />
+                                    </span>
                                 </div>
                                 <p className={cn('font-semibold tabular-nums', stat.value.length > 12 ? 'text-xl' : 'text-2xl')}>{stat.value}</p>
                             </CardContent>
@@ -108,12 +136,11 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                     ))}
                 </div>
 
-
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
+                    <Card className="border-t-4 border-t-amber-500 lg:col-span-2">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
-                                <AlertTriangle className="size-4" />
+                                <AlertTriangle className="size-4 text-amber-500" />
                                 Early warnings
                             </CardTitle>
                             <CardDescription>Analyzed events within 60 days of their date.</CardDescription>
@@ -150,20 +177,18 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                         </CardContent>
                     </Card>
 
-
-                    <Card>
+                    <Card className="border-t-4 border-t-indigo-500">
                         <CardHeader>
                             <CardTitle className="text-lg">Events by status</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <StatusBreakdown items={eventStatusCounts} />
+                            <StatusBreakdown items={eventStatusCounts} solid={(value) => eventMeta[value].solid} />
                         </CardContent>
                     </Card>
                 </div>
 
-
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
+                    <Card className="border-t-4 border-t-rose-500 lg:col-span-2">
                         <CardHeader>
                             <CardTitle className="text-lg">Critical vendor needs</CardTitle>
                             <CardDescription>Needs with no quotes yet, or whose quotes were all rejected.</CardDescription>
@@ -200,13 +225,13 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                         </CardContent>
                     </Card>
 
-
-                    <Card>
+                    <Card className="border-t-4 border-t-violet-500">
                         <CardHeader>
                             <CardTitle className="text-lg">Procurement pipeline</CardTitle>
+                            <CardDescription>How far each vendor need has come.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <StatusBreakdown items={procurementStatusCounts} />
+                            <StatusBreakdown items={procurementStatusCounts} solid={(value) => procurementMeta[value].solid} />
                         </CardContent>
                     </Card>
                 </div>

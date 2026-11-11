@@ -14,7 +14,7 @@ Project ini dibuat untuk tugas akhir mata kuliah Cloud Computing, Universitas Ci
 |------|-----|--------|-------|
 | Wesley Goeinawan | 0706012410011 | `wes` | Struktur data, CRUD event, halaman event |
 | Angga Dhammika Jaya | 0706012410017 | `ang` | Fondasi & konfigurasi, navigasi, kebutuhan vendor & penawaran, dashboard, deploy |
-| Keane Juan Suryanto | 0706012410004 | `kin` | Integrasi Gemini, analisis proposal, AI matching, saran risiko |
+| Keane Juan Suryanto | 0706012410004 | `kin` | Integrasi Gemini, analisis proposal, AI matching, pencarian vendor online |
 
 
 ## Progres fitur
@@ -26,13 +26,13 @@ Project ini dibuat untuk tugas akhir mata kuliah Cloud Computing, Universitas Ci
 | Kelola event | Buat, lihat, ubah, hapus event: nama, tanggal, lokasi, total anggaran, deskripsi, dan proposal PDF (maks. 10 MB). Proposal disimpan privat dan hanya bisa diunduh pemiliknya. | ✅ Selesai |
 | Analisis proposal dengan AI | Gemini membaca PDF proposal, menulis ringkasan, skala acara, perkiraan jumlah peserta, dan daftar kategori vendor beserta persentase anggaran. | ✅ Selesai |
 | Pembagian anggaran otomatis | Persentase dari Gemini diubah menjadi Rupiah oleh `BudgetAllocator` (PHP), sehingga totalnya selalu tepat sama dengan anggaran event. | ✅ Selesai |
-| Kebutuhan vendor | Tambah, ubah, hapus kebutuhan secara manual; tandai kebutuhan vital; ubah status pengadaan (Drafting → Searching → Quoted → Deal → Paid). | ✅ Selesai |
+| Kebutuhan vendor | Tambah, ubah, hapus kebutuhan secara manual; tandai kebutuhan vital; status pengadaan berjalan Belum dimulai → Mencari vendor → Membandingkan penawaran → Vendor terpilih → Lunas. Hampir semua langkah berubah otomatis saat mengerjakan penawaran; hanya "Paid" yang diatur manual. Tombol "What do the statuses mean?" menjelaskan setiap status. | ✅ Selesai |
 | Penawaran vendor | Catat penawaran (nama vendor, kontak, harga, catatan), terima atau tolak penawaran. | ✅ Selesai |
 | AI matching penawaran | Gemini menilai kecocokan spesifikasi tiap penawaran; PHP menghitung skor anggaran; skor akhir = 60% spesifikasi + 40% anggaran. | ✅ Selesai |
 | Pemantauan risiko | Status risiko dari sisa hari: Urgent (≤ 30 hari), Warning (≤ 60 hari), Low. Ditambah daftar kebutuhan vital yang belum aman. | ✅ Selesai |
-| Saran risiko dari AI | Gemini memberi ringkasan risiko dan rekomendasi langkah berdasarkan kondisi pengadaan event. | ✅ Selesai |
+| Cari vendor di internet | Gemini + Google Search mencari vendor nyata sesuai kategori dan lokasi event. Hasilnya bisa langsung ditambahkan sebagai penawaran (harga tetap harus dicek ke vendor). Penawaran juga tetap bisa diisi manual. | ✅ Selesai |
 | Dashboard | Ringkasan semua event: jumlah event, kebutuhan, penawaran, dan total anggaran; jumlah per status; kebutuhan kritis yang belum aman; peringatan risiko event terdekat. | ✅ Selesai |
-| Batas pemakaian AI | Per pengguna per menit: analisis 5x, matching 10x, saran risiko 5x. | ✅ Selesai |
+| Batas pemakaian AI | Per pengguna per menit: analisis 5x, matching 10x, pencarian vendor 10x. | ✅ Selesai |
 | Deploy | CloudPanel (https://venditores.fsd.my.id), database Supabase Postgres, file proposal di Supabase Storage. Dikerjakan Angga setelah merge final. | 🚀 Siap deploy |
 
 
@@ -41,7 +41,7 @@ Project ini dibuat untuk tugas akhir mata kuliah Cloud Computing, Universitas Ci
 
 1. **Gemini tidak pernah menghitung Rupiah.** Gemini hanya mengusulkan persentase per kategori. `app/Services/BudgetAllocator.php` mengubahnya menjadi Rupiah (bilangan bulat) dengan metode *largest remainder*, jadi jumlah semua alokasi selalu sama dengan total anggaran.
 2. **Skor penawaran dihitung bersama.** Gemini memberi skor kecocokan spesifikasi (0–100). `app/Services/MatchScoreCalculator.php` memberi skor anggaran: 100 kalau harga ≤ alokasi, berkurang 2 poin untuk setiap 1% di atas alokasi. Skor akhir = 60% spesifikasi + 40% anggaran.
-3. **Risiko dihitung di PHP.** `app/Services/RiskMonitor.php` menentukan level risiko dari sisa hari; Gemini (`RiskAdvisor`) hanya menulis saran.
+3. **Risiko dihitung di PHP.** `app/Services/RiskMonitor.php` menentukan level risiko dari sisa hari; tidak ada AI yang terlibat.
 4. Semua panggilan Gemini lewat `app/Services/Gemini/GeminiClient.php` dengan output JSON terstruktur, dan otomatis dicoba ulang saat Gemini sibuk (429/500/503).
 5. Semua proses berjalan langsung (tanpa queue worker), jadi tidak perlu menjalankan `queue:work` di server.
 
@@ -165,7 +165,7 @@ npx tsc --noEmit              # cek tipe TypeScript
 app/Enums/                 Status event, pengadaan, penawaran, level risiko
 app/Http/Controllers/      Controller event, kebutuhan vendor, penawaran, AI, dashboard
 app/Services/              BudgetAllocator, MatchScoreCalculator, RiskMonitor
-app/Services/Gemini/       GeminiClient, ProposalAnalyzer, QuoteMatcher, RiskAdvisor
+app/Services/Gemini/       GeminiClient, ProposalAnalyzer, QuoteMatcher, VendorFinder
 routes/features/           File route per fitur (dimuat otomatis oleh routes/web.php)
 resources/js/pages/        Halaman React: dashboard, events, vendor-needs
 resources/js/components/   Form, dialog, badge status

@@ -14,9 +14,22 @@ enum QuoteStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Pending',
-            self::Accepted => 'Accepted',
-            self::Rejected => 'Rejected',
+            self::Pending => 'Under review',
+            self::Accepted => 'Chosen',
+            self::Rejected => 'Declined',
         };
-    }	
+    }
+
+
+    /**
+     * What the status means, in one sentence.
+     */
+    public function description(): string
+    {
+        return match ($this) {
+            self::Pending => 'Offer received, not decided yet.',
+            self::Accepted => 'You picked this offer. The need moves to "Vendor chosen".',
+            self::Rejected => 'You turned this offer down. It no longer counts as an active option.',
+        };
+    }
 }

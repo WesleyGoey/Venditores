@@ -131,3 +131,59 @@ test('it deletes a quote', function () {
 
     $this->assertModelMissing($quote);
 });
+
+
+test('un-choosing the accepted quote steps the need back to quoted', function () {
+    $quote = Quote::factory()->create(['status' => QuoteStatus::Accepted]);
+    $need = $quote->vendorNeed;
+    $need->update(['procurement_status' => ProcurementStatus::Deal]);
+
+
+    $this->actingAs($need->event->user)
+        ->patch(route('events.vendor-needs.quotes.update', [$need->event, $need, $quote]), ['status' => 'pending']);
+
+
+    expect($need->refresh()->procurement_status)->toBe(ProcurementStatus::Quoted);
+});
+
+
+test('declining the last active quote steps the need back to searching', function () {
+    $quote = Quote::factory()->create(['status' => QuoteStatus::Pending]);
+    $need = $quote->vendorNeed;
+    $need->update(['procurement_status' => ProcurementStatus::Quoted]);
+
+
+    $this->actingAs($need->event->user)
+        ->patch(route('events.vendor-needs.quotes.update', [$need->event, $need, $quote]), ['status' => 'rejected']);
+
+
+    expect($need->refresh()->procurement_status)->toBe(ProcurementStatus::Searching);
+});
+
+
+test('deleting the chosen quote steps a deal back to searching when nothing else is left', function () {
+    $quote = Quote::factory()->create(['status' => QuoteStatus::Accepted]);
+    $need = $quote->vendorNeed;
+    $need->update(['procurement_status' => ProcurementStatus::Deal]);
+
+
+    $this->actingAs($need->event->user)
+        ->delete(route('events.vendor-needs.quotes.destroy', [$need->event, $need, $quote]));
+
+
+    expect($need->refresh()->procurement_status)->toBe(ProcurementStatus::Searching);
+});
+
+
+test('a paid need is never stepped back', function () {
+    $quote = Quote::factory()->create(['status' => QuoteStatus::Accepted]);
+    $need = $quote->vendorNeed;
+    $need->update(['procurement_status' => ProcurementStatus::Paid]);
+
+
+    $this->actingAs($need->event->user)
+        ->delete(route('events.vendor-needs.quotes.destroy', [$need->event, $need, $quote]));
+
+
+    expect($need->refresh()->procurement_status)->toBe(ProcurementStatus::Paid);
+});

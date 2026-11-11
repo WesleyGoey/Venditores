@@ -1,20 +1,24 @@
 import ProcurementStatusSelect from '@/components/procurement-status-select';
+import ProcurementStepper from '@/components/procurement-stepper';
 import QuoteFormDialog from '@/components/quote-form-dialog';
 import { QuoteStatusBadge, VitalBadge } from '@/components/status-badges';
+import StatusGuide from '@/components/status-guide';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import VendorNeedFormDialog from '@/components/vendor-need-form-dialog';
+import VendorSearchDialog from '@/components/vendor-search-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatPercentage, formatRupiah } from '@/lib/format';
+import { quoteMeta } from '@/lib/status-meta';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type EventStatus, type Option, type ProcurementStatus, type Quote, type QuoteStatus, type VendorNeed } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, LoaderCircle, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, LoaderCircle, Pencil, Plus, Sparkles, Trash2, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
 interface ShowVendorNeedProps {
-    event: { id: number; name: string; event_date: string; total_budget: number; status: EventStatus };
+    event: { id: number; name: string; location: string | null; event_date: string; total_budget: number; status: EventStatus };
     vendorNeed: VendorNeed & { quotes: Quote[] };
     procurementStatuses: Option<ProcurementStatus>[];
     quoteStatuses: Option<QuoteStatus>[];
@@ -111,8 +115,18 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     </div>
                 </div>
 
+                <Card className="border-t-4 border-t-indigo-500">
+                    <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+                        <CardTitle className="text-lg">Progress</CardTitle>
+                        <StatusGuide />
+                    </CardHeader>
+                    <CardContent>
+                        <ProcurementStepper status={vendorNeed.procurement_status} />
+                    </CardContent>
+                </Card>
+
                 <div className="grid gap-4 md:grid-cols-3">
-                    <Card className="md:col-span-2">
+                    <Card className="border-t-4 border-t-sky-500 md:col-span-2">
                         <CardHeader>
                             <CardTitle className="text-lg">Specification</CardTitle>
                         </CardHeader>
@@ -120,9 +134,12 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                             <p className="text-sm leading-relaxed whitespace-pre-line">{vendorNeed.specification || 'No specification yet.'}</p>
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card className="border-t-4 border-t-emerald-500 bg-gradient-to-br from-emerald-50/70 to-transparent dark:from-emerald-950/30">
                         <CardHeader>
-                            <CardTitle className="text-lg">Allocated budget</CardTitle>
+                            <CardTitle className="flex items-center gap-2 text-lg">
+                                <Wallet className="size-4 text-emerald-600 dark:text-emerald-400" />
+                                Allocated budget
+                            </CardTitle>
                             <CardDescription>{formatPercentage(vendorNeed.allocated_budget, event.total_budget)} of the event budget</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -131,13 +148,19 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     </Card>
                 </div>
 
-                <Card>
+                <Card className="border-t-4 border-t-violet-500">
                     <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 space-y-0">
                         <div className="space-y-1.5">
                             <CardTitle className="text-lg">Vendor quotes</CardTitle>
                             <CardDescription>Match score = 60% specification fit (AI) + 40% budget fit.</CardDescription>
                         </div>
                         <div className="flex flex-wrap gap-2">
+                            <VendorSearchDialog
+                                eventId={event.id}
+                                vendorNeedId={vendorNeed.id}
+                                category={vendorNeed.category}
+                                location={event.location}
+                            />
                             <Button variant="outline" size="sm" onClick={matchQuotes} disabled={matching || vendorNeed.quotes.length === 0}>
                                 {matching ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
                                 {matching ? 'Scoring quotes…' : 'Match quotes with AI'}
@@ -156,14 +179,25 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     </CardHeader>
                     <CardContent>
                         {vendorNeed.quotes.length === 0 ? (
-                            <p className="text-muted-foreground py-6 text-center text-sm">No quotes yet. Add the offers you receive from vendors.</p>
+                            <p className="text-muted-foreground py-6 text-center text-sm">
+                                No quotes yet. Use &quot;Find vendors online&quot; to search the web, or &quot;Add quote&quot; to enter an offer you
+                                already received.
+                            </p>
                         ) : (
                             <div className="space-y-3">
                                 {vendorNeed.quotes.map((quote) => {
                                     const difference = quote.price - vendorNeed.allocated_budget;
 
                                     return (
-                                        <div key={quote.id} className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-start">
+                                        <div
+                                            key={quote.id}
+                                            className={cn(
+                                                'flex flex-col gap-3 rounded-lg border border-l-4 p-4 md:flex-row md:items-start',
+                                                quote.status === 'accepted' && 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20',
+                                                quote.status === 'pending' && 'border-l-amber-400',
+                                                quote.status === 'rejected' && 'border-l-rose-400 opacity-70',
+                                            )}
+                                        >
                                             <div className="min-w-0 flex-1 space-y-1">
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <p className="font-medium">{quote.vendor_name}</p>
@@ -204,14 +238,51 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                                                     )}
                                                 </div>
                                                 <div className="flex items-center gap-1">
+                                                    {quote.status !== 'accepted' && (
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-8 bg-emerald-600 text-white hover:bg-emerald-700"
+                                                            onClick={() => updateQuoteStatus(quote, 'accepted')}
+                                                            title={quoteMeta.accepted.description}
+                                                        >
+                                                            <Check className="size-4" />
+                                                            Choose
+                                                        </Button>
+                                                    )}
                                                     <Select value={quote.status} onValueChange={(status) => updateQuoteStatus(quote, status)}>
-                                                        <SelectTrigger className="h-8 w-28" aria-label="Quote status">
-                                                            <SelectValue />
+                                                        <SelectTrigger
+                                                            className="h-8 w-36"
+                                                            aria-label="Quote status"
+                                                            title={quoteMeta[quote.status].description}
+                                                        >
+                                                            <SelectValue>
+                                                                <span className="flex items-center gap-2">
+                                                                    <span
+                                                                        className={cn('size-2 rounded-full', quoteMeta[quote.status].solid)}
+                                                                        aria-hidden
+                                                                    />
+                                                                    {quoteMeta[quote.status].label}
+                                                                </span>
+                                                            </SelectValue>
                                                         </SelectTrigger>
-                                                        <SelectContent>
+                                                        <SelectContent className="w-64">
                                                             {quoteStatuses.map((option) => (
-                                                                <SelectItem key={option.value} value={option.value}>
-                                                                    {option.label}
+                                                                <SelectItem key={option.value} value={option.value} className="items-start py-2">
+                                                                    <span className="flex items-start gap-2">
+                                                                        <span
+                                                                            className={cn(
+                                                                                'mt-1.5 size-2 shrink-0 rounded-full',
+                                                                                quoteMeta[option.value].solid,
+                                                                            )}
+                                                                            aria-hidden
+                                                                        />
+                                                                        <span className="flex flex-col">
+                                                                            <span className="font-medium">{quoteMeta[option.value].label}</span>
+                                                                            <span className="text-muted-foreground text-xs whitespace-normal">
+                                                                                {quoteMeta[option.value].description}
+                                                                            </span>
+                                                                        </span>
+                                                                    </span>
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectContent>

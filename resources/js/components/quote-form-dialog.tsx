@@ -20,18 +20,20 @@ interface QuoteFormDialogProps {
     eventId: number;
     vendorNeedId: number;
     quote?: Quote;
+    /** Pre-filled values for a new quote, e.g. a vendor found online. */
+    defaults?: Partial<QuoteFormData>;
     trigger: ReactNode;
 }
 
-export default function QuoteFormDialog({ eventId, vendorNeedId, quote, trigger }: QuoteFormDialogProps) {
+export default function QuoteFormDialog({ eventId, vendorNeedId, quote, defaults, trigger }: QuoteFormDialogProps) {
     const [open, setOpen] = useState(false);
     const isEditing = quote !== undefined;
 
     const { data, setData, post, patch, processing, errors, reset, clearErrors } = useForm<QuoteFormData>({
-        vendor_name: quote?.vendor_name ?? '',
-        vendor_contact: quote?.vendor_contact ?? '',
-        price: quote ? String(quote.price) : '',
-        notes: quote?.notes ?? '',
+        vendor_name: quote?.vendor_name ?? defaults?.vendor_name ?? '',
+        vendor_contact: quote?.vendor_contact ?? defaults?.vendor_contact ?? '',
+        price: quote ? String(quote.price) : (defaults?.price ?? ''),
+        notes: quote?.notes ?? defaults?.notes ?? '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -68,7 +70,8 @@ export default function QuoteFormDialog({ eventId, vendorNeedId, quote, trigger 
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Edit quote' : 'Add vendor quote'}</DialogTitle>
                     <DialogDescription>
-                        Record the offer you received. Describe what is included so the AI can compare it to the specification.
+                        Enter the offer you received. Describe what is included so the AI can compare it to the specification. Check the price with
+                        the vendor before you choose them.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-4">

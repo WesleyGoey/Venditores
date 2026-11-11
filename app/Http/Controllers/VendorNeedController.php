@@ -35,7 +35,7 @@ class VendorNeedController extends Controller
 
         return Inertia::render('vendor-needs/show', [
             'event' => [
-                ...$event->only(['id', 'name', 'total_budget', 'status']),
+                ...$event->only(['id', 'name', 'location', 'total_budget', 'status']),
                 'event_date' => $event->event_date->toDateString(),
             ],
             'vendorNeed' => $vendorNeed,

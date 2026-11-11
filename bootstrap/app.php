@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\GeminiException;
+use Illuminate\Http\Request;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,7 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (GeminiException $exception) {
+        $exceptions->render(function (GeminiException $exception, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $exception->getMessage()], 502);
+            }
+
             return back()->with('error', $exception->getMessage());
         });
     })->create();

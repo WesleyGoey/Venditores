@@ -1,15 +1,17 @@
 import ProcurementStatusSelect from '@/components/procurement-status-select';
 import { EventStatusBadge, RiskBadge, VitalBadge } from '@/components/status-badges';
+import StatusGuide from '@/components/status-guide';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import VendorNeedFormDialog from '@/components/vendor-need-form-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatDaysRemaining, formatPercentage, formatRupiah } from '@/lib/format';
+import { riskMeta } from '@/lib/status-meta';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type Option, type ProcurementStatus, type RiskAssessment, type VenditoresEvent } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { CheckCircle2, FileText, LoaderCircle, MapPin, Pencil, Plus, RotateCcw, ShieldAlert, Sparkles, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-
 
 interface ShowEventProps {
     event: VenditoresEvent;
@@ -17,28 +19,22 @@ interface ShowEventProps {
     procurementStatuses: Option<ProcurementStatus>[];
 }
 
-
 export default function ShowEvent({ event, risk, procurementStatuses }: ShowEventProps) {
     const [analyzing, setAnalyzing] = useState(false);
-    const [advising, setAdvising] = useState(false);
-
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Events', href: route('events.index') },
         { title: event.name, href: route('events.show', event.id) },
     ];
 
-
     const allocatedBudget = event.vendor_needs.reduce((total, need) => total + need.allocated_budget, 0);
     const remainingBudget = event.total_budget - allocatedBudget;
     const isCompleted = event.status === 'completed';
-
 
     const analyze = () => {
         if (event.vendor_needs.length > 0 && !confirm('Re-analyzing replaces all current vendor needs and their quotes. Continue?')) {
             return;
         }
-
 
         router.post(
             route('events.analysis.store', event.id),
@@ -51,26 +47,11 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
         );
     };
 
-
-    const requestAdvice = () => {
-        router.post(
-            route('events.risk-advice.store', event.id),
-            {},
-            {
-                preserveScroll: true,
-                onStart: () => setAdvising(true),
-                onFinish: () => setAdvising(false),
-            },
-        );
-    };
-
-
     const deleteEvent = () => {
         if (confirm(`Delete "${event.name}" with all of its vendor needs and quotes?`)) {
             router.delete(route('events.destroy', event.id));
         }
     };
-
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -132,12 +113,11 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                     </div>
                 </div>
 
-
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
+                    <Card className="border-t-4 border-t-violet-500 bg-gradient-to-br from-violet-50/70 to-transparent lg:col-span-2 dark:from-violet-950/30">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
-                                <Sparkles className="size-4" />
+                                <Sparkles className="size-4 text-violet-600 dark:text-violet-400" />
                                 AI proposal analysis
                             </CardTitle>
                             <CardDescription>
@@ -165,7 +145,6 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                                 event.description && <p className="text-muted-foreground text-sm">{event.description}</p>
                             )}
 
-
                             {event.has_proposal ? (
                                 <Button onClick={analyze} disabled={analyzing}>
                                     {analyzing ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
@@ -186,8 +165,7 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                         </CardContent>
                     </Card>
 
-
-                    <Card>
+                    <Card className={cn('border-l-4', riskMeta[risk.level].panel)}>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
                                 <ShieldAlert className="size-4" />
@@ -206,33 +184,11 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                                     {risk.unsecured_vital_needs.join(', ')}
                                 </p>
                             )}
-                            {event.risk_advice && (
-                                <div className="bg-muted/50 space-y-2 rounded-lg p-3 text-sm">
-                                    {event.risk_advice.headline && <p className="font-medium">{event.risk_advice.headline}</p>}
-                                    <ol className="list-decimal space-y-1 pl-4">
-                                        {event.risk_advice.recommendations.map((recommendation, index) => (
-                                            <li key={index}>{recommendation}</li>
-                                        ))}
-                                    </ol>
-                                    {event.risk_advised_at && (
-                                        <p className="text-muted-foreground text-xs">
-                                            Generated {new Date(event.risk_advised_at).toLocaleString('en-GB')}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                            {!isCompleted && (
-                                <Button variant="outline" size="sm" onClick={requestAdvice} disabled={advising || event.vendor_needs.length === 0}>
-                                    {advising ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                                    {event.risk_advice ? 'Refresh AI advice' : 'Get AI advice'}
-                                </Button>
-                            )}
                         </CardContent>
                     </Card>
                 </div>
 
-
-                <Card>
+                <Card className="border-t-4 border-t-indigo-500">
                     <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 space-y-0">
                         <div className="space-y-1.5">
                             <CardTitle className="text-lg">Vendor needs &amp; budget allocation</CardTitle>
@@ -245,15 +201,18 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                                 </span>
                             </CardDescription>
                         </div>
-                        <VendorNeedFormDialog
-                            eventId={event.id}
-                            trigger={
-                                <Button size="sm">
-                                    <Plus className="size-4" />
-                                    Add need
-                                </Button>
-                            }
-                        />
+                        <div className="flex flex-wrap items-center gap-2">
+                            <StatusGuide />
+                            <VendorNeedFormDialog
+                                eventId={event.id}
+                                trigger={
+                                    <Button size="sm">
+                                        <Plus className="size-4" />
+                                        Add need
+                                    </Button>
+                                }
+                            />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {event.vendor_needs.length === 0 ? (
@@ -264,7 +223,7 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                             <div className="-mx-6 overflow-x-auto">
                                 <table className="w-full min-w-[720px] text-sm">
                                     <thead>
-                                        <tr className="text-muted-foreground border-b text-left text-xs">
+                                        <tr className="border-b bg-indigo-50/60 text-left text-xs text-indigo-900 dark:bg-indigo-950/30 dark:text-indigo-200">
                                             <th className="px-6 py-2 font-medium">Category</th>
                                             <th className="px-2 py-2 text-right font-medium">Allocation</th>
                                             <th className="px-2 py-2 font-medium">Status</th>

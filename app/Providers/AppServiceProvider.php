@@ -33,13 +33,15 @@ class AppServiceProvider extends ServiceProvider
         $limits = [
             'ai-analysis' => 5,
             'ai-matching' => 10,
-            'ai-risk' => 5,
+            'ai-vendor-search' => 10,
         ];
 
         foreach ($limits as $name => $perMinute) {
             RateLimiter::for($name, fn (Request $request): Limit => Limit::perMinute($perMinute)
                 ->by($request->user()?->id ?: $request->ip())
-                ->response(fn () => back()->with('error', 'Too many AI requests. Please wait a minute and try again.')));
+                ->response(fn (Request $request) => $request->expectsJson()
+                    ? response()->json(['message' => 'Too many AI requests. Please wait a minute and try again.'], 429)
+                    : back()->with('error', 'Too many AI requests. Please wait a minute and try again.')));
         }
     }
 }

@@ -70,6 +70,33 @@ class VendorNeed extends Model
 
 
     /**
+     * Keep the procurement status in step after a quote was changed or deleted.
+     *
+     * Moving forward (a quote was chosen) is handled by the caller. This only
+     * steps back when the quote that justified the current status is gone:
+     * the chosen quote was un-chosen, or the last active offer was declined.
+     */
+    public function stepBackAfterQuoteChange(?QuoteStatus $previousQuoteStatus): void
+    {
+        $quoteStatuses = $this->quotes()->pluck('status');
+
+        if (
+            $this->procurement_status === ProcurementStatus::Deal
+            && $previousQuoteStatus === QuoteStatus::Accepted
+            && ! $quoteStatuses->contains(QuoteStatus::Accepted)
+        ) {
+            $this->update(['procurement_status' => ProcurementStatus::Quoted]);
+        }
+
+        if (
+            $this->procurement_status === ProcurementStatus::Quoted
+            && ! $quoteStatuses->contains(fn (QuoteStatus $status): bool => $status !== QuoteStatus::Rejected)
+        ) {
+            $this->update(['procurement_status' => ProcurementStatus::Searching]);
+        }
+    }
+
+    /**
      * Needs that have no quotes yet, or whose quotes were all rejected.
      *
      * @param  Builder<VendorNeed>  $query

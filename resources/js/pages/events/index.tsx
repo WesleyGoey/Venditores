@@ -3,10 +3,11 @@ import { EventStatusBadge, RiskBadge } from '@/components/status-badges';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatRupiah } from '@/lib/format';
+import { riskMeta } from '@/lib/status-meta';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type EventStatus, type RiskLevel } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { CalendarPlus, MapPin } from 'lucide-react';
-
 
 interface EventListItem {
     id: number;
@@ -20,9 +21,7 @@ interface EventListItem {
     risk_level: RiskLevel;
 }
 
-
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Events', href: '/events' }];
-
 
 export default function EventsIndex({ events }: { events: EventListItem[] }) {
     return (
@@ -39,9 +38,8 @@ export default function EventsIndex({ events }: { events: EventListItem[] }) {
                     </Button>
                 </div>
 
-
                 {events.length === 0 ? (
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border rounded-xl border border-dashed p-10 text-center">
+                    <div className="border-primary/30 bg-accent/40 rounded-xl border border-dashed p-10 text-center">
                         <p className="font-medium">No events yet</p>
                         <p className="text-muted-foreground mt-1 text-sm">
                             Create your first event and upload its proposal to get an AI vendor plan.
@@ -53,7 +51,10 @@ export default function EventsIndex({ events }: { events: EventListItem[] }) {
                             <Link
                                 key={event.id}
                                 href={route('events.show', event.id)}
-                                className="border-sidebar-border/70 dark:border-sidebar-border hover:bg-accent/50 flex flex-col gap-3 rounded-xl border p-4 transition-colors"
+                                className={cn(
+                                    'bg-card hover:border-primary/40 flex flex-col gap-3 rounded-xl border border-t-4 p-4 shadow-xs transition hover:shadow-md',
+                                    event.status === 'completed' ? 'border-t-emerald-500' : riskMeta[event.risk_level].top,
+                                )}
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <h3 className="leading-tight font-semibold">{event.name}</h3>

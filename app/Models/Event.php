@@ -37,8 +37,6 @@ class Event extends Model
         'scale',
         'estimated_attendees',
         'analyzed_at',
-        'risk_advice',
-        'risk_advised_at',
     ];
 
 
@@ -65,8 +63,6 @@ class Event extends Model
             'estimated_attendees' => 'integer',
             'status' => EventStatus::class,
             'analyzed_at' => 'datetime',
-            'risk_advice' => 'array',
-            'risk_advised_at' => 'datetime',
         ];
     }
 

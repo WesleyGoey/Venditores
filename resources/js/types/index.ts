@@ -65,13 +65,6 @@ export interface Option<T extends string = string> {
 }
 
 
-export interface RiskAdvice {
-    level: RiskLevel;
-    headline: string;
-    recommendations: string[];
-}
-
-
 export interface VenditoresEvent {
     id: number;
     name: string;
@@ -86,8 +79,6 @@ export interface VenditoresEvent {
     scale: 'small' | 'medium' | 'large' | null;
     estimated_attendees: number | null;
     analyzed_at: string | null;
-    risk_advice: RiskAdvice | null;
-    risk_advised_at: string | null;
     vendor_needs: VendorNeed[];
 }
 
