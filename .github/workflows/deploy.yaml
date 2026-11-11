@@ -1,0 +1,152 @@
+name: Venditores CI/CD
+
+on:
+  push:
+    branches: ["main"] # Berjalan hanya saat ada push ke branch production
+
+# Kalau ada push baru saat deploy masih berjalan, tunggu yang lama selesai dulu
+# supaya dua deploy tidak menimpa file server secara bersamaan.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  laravel-tests:
+    name: Run Tests & Build Assets
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.5'
+        extensions: mbstring, xml, ctype, iconv, sqlite3, pdo_sqlite, bcmath, filter, zip, fileinfo, curl
+        tools: composer:v2
+        coverage: none
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: npm
+
+    - name: Copy Environment File
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    - name: Cache Composer Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache/files
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Install Composer Dependencies
+      run: composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+
+    - name: Generate Application Key
+      run: php artisan key:generate
+
+    - name: Install NPM Dependencies & Build Assets
+      run: |
+        npm ci
+        npm run build
+
+    # Test memakai SQLite di memori (lihat phpunit.xml) dan semua panggilan
+    # Gemini di-mock, jadi tidak butuh GEMINI_API_KEY dan tidak memakai kuota.
+    - name: Run Tests
+      run: php artisan test
+      env:
+        APP_ENV: testing
+        CACHE_STORE: array
+        SESSION_DRIVER: array
+        QUEUE_CONNECTION: sync
+        MAIL_MAILER: array
+
+  deploy:
+    name: Deploy to Live Hosting
+    needs: laravel-tests # Deploy hanya jalan kalau semua test lolos
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.5'
+        extensions: mbstring, xml, ctype, iconv, sqlite3, pdo_sqlite, bcmath, filter, zip, fileinfo, curl
+        tools: composer:v2
+        coverage: none
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: npm
+
+    - name: Cache Composer Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache/files
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    # vendor/ dan public/build/ ada di .gitignore, jadi keduanya dibuat di sini
+    # (vendor hanya paket production) lalu dikirim ke server sebagai satu arsip,
+    # karena server tidak memakai Composer maupun Node.
+    - name: Install Production Composer Dependencies
+      run: composer install --no-dev --no-scripts --optimize-autoloader --prefer-dist --no-ansi --no-interaction --no-progress
+
+    - name: Build Production Assets
+      run: |
+        npm ci
+        npm run build
+
+    - name: Package Vendor & Built Assets
+      run: tar -czf release.tar.gz vendor public/build
+
+    - name: Upload Package to Server
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        source: "release.tar.gz"
+        target: ${{ secrets.DEPLOY_PATH }}
+        overwrite: true
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.2.5
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        script: |
+          set -eu
+          cd "${{ secrets.DEPLOY_PATH }}"
+          git pull origin main
+          test -f release.tar.gz
+          rm -rf release.deploy
+          mkdir release.deploy
+          tar -xzf release.tar.gz -C release.deploy
+          test -f release.deploy/vendor/autoload.php
+          test -d release.deploy/public/build
+
+          # Tukar vendor dan public/build dengan versi baru
+          rm -rf vendor.previous public/build.previous
+          if [ -d vendor ]; then mv vendor vendor.previous; fi
+          if [ -d public/build ]; then mv public/build public/build.previous; fi
+          mv release.deploy/vendor vendor
+          mv release.deploy/public/build public/build
+          rm -rf vendor.previous public/build.previous release.deploy release.tar.gz
+
+          rm -f bootstrap/cache/*.php
+          php artisan package:discover --ansi
+          php artisan migrate --force
+          php artisan config:cache
