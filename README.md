@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# 🎪 Venditores
+# 📦 Venditores
 
 ### Pengadaan vendor acara, dari proposal PDF sampai hari H.
 
@@ -16,7 +16,7 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 
 [![Website][Website-badge]][Website-url]
 
-[**Fitur**](#-fitur) · [**Alur Kerja**](#-alur-kerja) · [**Menjalankan Project**](#-menjalankan-project) · [**Tim**](#-tim)
+[**Tim**](#-tim) · [**Fitur**](#-fitur) · [**Alur Kerja**](#-alur-kerja) · [**Menjalankan Project**](#-menjalankan-project)
 
 </div>
 
@@ -151,7 +151,6 @@ Per pengguna, per menit:
 ```bash
 git clone https://github.com/WesleyGoey/Venditores.git
 cd Venditores
-git switch kin                   # atau wes / ang
 
 composer install
 npm install
