@@ -20,7 +20,6 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 
 </div>
 
----
 ## 👥 Tim
 
 | Nama | NIM | Branch |
@@ -28,6 +27,8 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 | Wesley Goeinawan | 0706012410011 | `wes` |
 | Angga Dhammika Jaya | 0706012410017 | `ang` |
 | Keane Juan Suryanto | 0706012410004 | `kin` |
+
+---
 
 <details>
   <summary><b>📑 Daftar Isi</b></summary>
