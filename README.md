@@ -1,44 +1,147 @@
-# Venditores
+<a id="readme-top"></a>
 
-Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari awal sampai acara selesai. Panitia mengunggah proposal PDF, Google Gemini menyusun daftar kebutuhan vendor beserta anggarannya, lalu panitia mencari vendor, membandingkan penawaran, dan memantau risiko dari dashboard.
+<div align="center">
 
-Project tugas akhir mata kuliah Cloud Computing, Universitas Ciputra.
+# 🎪 Venditores
 
-Website: https://venditores.fsd.my.id
+### Pengadaan vendor acara, dari proposal PDF sampai hari H.
 
-## Tim
+Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari awal sampai acara selesai.
 
-Wesley Goeinawan, 0706012410011, branch `wes`
+[![Laravel][Laravel-badge]][Laravel-url]
+[![React][React-badge]][React-url]
+[![TypeScript][TypeScript-badge]][TypeScript-url]
+[![Tailwind CSS][Tailwind-badge]][Tailwind-url]
+[![Gemini][Gemini-badge]][Gemini-url]
 
-Angga Dhammika Jaya, 0706012410017, branch `ang`
+[![Website][Website-badge]][Website-url]
 
-Keane Juan Suryanto, 0706012410004, branch `kin`
+[**Fitur**](#-fitur) · [**Alur Kerja**](#-alur-kerja) · [**Menjalankan Project**](#-menjalankan-project) · [**Tim**](#-tim)
 
-## Fitur
+</div>
 
-Akun: daftar, login, reset password, dan verifikasi email.
+---
 
-Event: buat, ubah, dan hapus event beserta proposal PDF (maks. 10 MB, disimpan privat).
+<details>
+  <summary><b>📑 Daftar Isi</b></summary>
+  <ol>
+    <li><a href="#-tentang-project">Tentang Project</a></li>
+    <li><a href="#-alur-kerja">Alur Kerja</a></li>
+    <li>
+      <a href="#-fitur">Fitur</a>
+      <ul>
+        <li><a href="#status-pengadaan">Status pengadaan</a></li>
+        <li><a href="#status-penawaran">Status penawaran</a></li>
+        <li><a href="#ai-matching">AI matching</a></li>
+        <li><a href="#risiko">Risiko</a></li>
+        <li><a href="#batas-pemakaian-ai">Batas pemakaian AI</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#-menjalankan-project">Menjalankan Project</a>
+      <ul>
+        <li><a href="#prasyarat">Prasyarat</a></li>
+        <li><a href="#instalasi">Instalasi</a></li>
+        <li><a href="#konfigurasi-env">Konfigurasi .env</a></li>
+        <li><a href="#akun-demo">Akun demo</a></li>
+        <li><a href="#setelah-git-pull">Setelah git pull</a></li>
+      </ul>
+    </li>
+    <li><a href="#-tim">Tim</a></li>
+  </ol>
+</details>
 
-Analisis proposal: Gemini membaca proposal lalu menulis ringkasan, skala acara, perkiraan peserta, dan kategori vendor beserta persentase anggaran. Persentase itu diubah menjadi Rupiah sehingga total alokasi selalu sama dengan anggaran event.
+## 💡 Tentang Project
 
-Kebutuhan vendor: tambah, ubah, hapus, dan tandai sebagai vital. Status pengadaan berjalan Not started, Finding vendors, Comparing offers, Vendor chosen, lalu Paid. Status berubah otomatis saat panitia bekerja dengan penawaran, kecuali Paid yang diatur manual. Tombol "What do the statuses mean?" menjelaskan arti tiap status.
+Panitia mengunggah **proposal PDF**, lalu **Google Gemini** menyusun daftar kebutuhan vendor beserta anggarannya. Setelah itu panitia mencari vendor, membandingkan penawaran, dan memantau risiko dari **dashboard**.
 
-Cari vendor online: tombol "Find vendors online" memakai Gemini dengan Google Search untuk mencari vendor sesuai kategori dan lokasi event, lengkap dengan harga perkiraan, kontak, website, dan sumbernya. Hasilnya bisa dijadikan penawaran lewat "Add as quote".
+> 🎓 Project tugas akhir mata kuliah **Cloud Computing**, Universitas Ciputra.
+>
+> 🌐 Website: **[venditores.fsd.my.id][Website-url]**
 
-Penawaran: catat manual atau dari hasil pencarian online, pilih dengan tombol Choose, atau tolak. Status penawaran: Under review, Chosen, Declined.
+<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
 
-AI matching: Gemini menilai kecocokan penawaran dengan spesifikasi, lalu sistem menilai kecocokan harga dengan anggaran. Skor akhir adalah 60% spesifikasi dan 40% anggaran.
+## 🔄 Alur Kerja
 
-Risiko: dihitung dari sisa hari menuju acara tanpa AI. Urgent jika 30 hari atau kurang, Warning jika 60 hari atau kurang, selain itu Low.
+```mermaid
+flowchart LR
+    A[📄 Upload proposal PDF] --> B[🤖 Gemini analisis proposal]
+    B --> C[📋 Kebutuhan vendor + anggaran Rupiah]
+    C --> D[🔎 Cari vendor online]
+    D --> E[💬 Catat & bandingkan penawaran]
+    E --> F[✅ Pilih vendor]
+    F --> G[📊 Pantau dashboard & risiko]
+```
 
-Dashboard: jumlah event, kebutuhan vendor, penawaran, total anggaran, status pipeline, kebutuhan kritis, dan peringatan risiko.
+<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
 
-Batas pemakaian AI per pengguna per menit: analisis proposal 5 kali, matching 10 kali, pencarian vendor 10 kali.
+## ✨ Fitur
 
-## Menjalankan project
+| | Fitur | Penjelasan |
+|:---:|---|---|
+| 🔐 | **Akun** | Daftar, login, reset password, dan verifikasi email. |
+| 📅 | **Event** | Buat, ubah, dan hapus event beserta proposal PDF (maks. 10 MB, disimpan privat). |
+| 🤖 | **Analisis proposal** | Gemini membaca proposal lalu menulis ringkasan, skala acara, perkiraan peserta, dan kategori vendor beserta persentase anggaran. Persentase itu diubah menjadi Rupiah sehingga total alokasi selalu sama dengan anggaran event. |
+| 📋 | **Kebutuhan vendor** | Tambah, ubah, hapus, dan tandai sebagai vital. |
+| 🔎 | **Cari vendor online** | Tombol **"Find vendors online"** memakai Gemini dengan Google Search untuk mencari vendor sesuai kategori dan lokasi event, lengkap dengan harga perkiraan, kontak, website, dan sumbernya. Hasilnya bisa dijadikan penawaran lewat **"Add as quote"**. |
+| 💬 | **Penawaran** | Catat manual atau dari hasil pencarian online, pilih dengan tombol **Choose**, atau tolak. |
+| 🎯 | **AI matching** | Gemini menilai kecocokan penawaran dengan spesifikasi, sistem menilai kecocokan harga dengan anggaran. |
+| ⏰ | **Risiko** | Dihitung dari sisa hari menuju acara, tanpa AI. |
+| 📊 | **Dashboard** | Jumlah event, kebutuhan vendor, penawaran, total anggaran, status pipeline, kebutuhan kritis, dan peringatan risiko. |
 
-Yang harus terpasang: PHP 8.3 atau lebih baru (ekstensi `pdo_sqlite`, `sqlite3`, `mbstring`, `openssl`, `fileinfo`, `curl`), Composer 2, Node.js 22, Git.
+### Status pengadaan
+
+```mermaid
+flowchart LR
+    A[Not started] --> B[Finding vendors] --> C[Comparing offers] --> D[Vendor chosen] --> E[Paid]
+```
+
+Status berubah otomatis saat panitia bekerja dengan penawaran, kecuali **Paid** yang diatur manual. Tombol **"What do the statuses mean?"** menjelaskan arti tiap status.
+
+### Status penawaran
+
+| Status | Arti |
+|---|---|
+| 🟡 **Under review** | Penawaran sedang dipertimbangkan |
+| 🟢 **Chosen** | Vendor dipilih |
+| 🔴 **Declined** | Penawaran ditolak |
+
+### AI matching
+
+```
+skor akhir = 60% kecocokan spesifikasi (Gemini) + 40% kecocokan anggaran (sistem)
+```
+
+### Risiko
+
+| Level | Sisa hari menuju acara |
+|---|---|
+| 🔴 **Urgent** | 30 hari atau kurang |
+| 🟠 **Warning** | 60 hari atau kurang |
+| 🟢 **Low** | lebih dari 60 hari |
+
+### Batas pemakaian AI
+
+Per pengguna, per menit:
+
+| Fitur | Batas |
+|---|---|
+| Analisis proposal | 5 kali |
+| AI matching | 10 kali |
+| Pencarian vendor | 10 kali |
+
+<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
+
+## 🚀 Menjalankan Project
+
+### Prasyarat
+
+- **PHP 8.3** atau lebih baru, dengan ekstensi `pdo_sqlite`, `sqlite3`, `mbstring`, `openssl`, `fileinfo`, `curl`
+- **Composer 2**
+- **Node.js 22**
+- **Git**
+
+### Instalasi
 
 ```bash
 git clone https://github.com/WesleyGoey/Venditores.git
@@ -58,14 +161,55 @@ php artisan db:seed              # opsional, data demo
 composer run dev
 ```
 
-Buka http://127.0.0.1:8000.
+Buka 👉 **http://127.0.0.1:8000**
 
-Isi `.env`:
+### Konfigurasi `.env`
 
-`GEMINI_API_KEY`: tanpa key, hanya fitur AI yang tidak jalan.
+| Variabel | Keterangan |
+|---|---|
+| `GEMINI_API_KEY` | Tanpa key, hanya fitur AI yang tidak jalan. |
+| `MAIL_MAILER=log` | Email tidak dikirim, link verifikasi ada di `storage/logs/laravel.log`. |
 
-`MAIL_MAILER=log`: email tidak dikirim, link verifikasi ada di `storage/logs/laravel.log`.
+> ⚠️ Jangan commit file `.env` ke GitHub.
 
-Akun demo setelah `db:seed`: `test@example.com` dengan password `password`. Seeder ini hanya untuk lokal.
+### Akun demo
 
-Setelah `git pull`, jalankan `composer install`, `npm install`, dan `php artisan migrate`.
+Tersedia setelah `php artisan db:seed`. Seeder ini hanya untuk lokal.
+
+| Email | Password |
+|---|---|
+| `test@example.com` | `password` |
+
+### Setelah `git pull`
+
+```bash
+composer install
+npm install
+php artisan migrate
+```
+
+<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
+
+## 👥 Tim
+
+| Nama | NIM | Branch |
+|---|---|---|
+| Wesley Goeinawan | 0706012410011 | `wes` |
+| Angga Dhammika Jaya | 0706012410017 | `ang` |
+| Keane Juan Suryanto | 0706012410004 | `kin` |
+
+<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[Laravel-badge]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
+[Laravel-url]: https://laravel.com
+[React-badge]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://react.dev
+[TypeScript-badge]: https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white
+[TypeScript-url]: https://www.typescriptlang.org
+[Tailwind-badge]: https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white
+[Tailwind-url]: https://tailwindcss.com
+[Gemini-badge]: https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white
+[Gemini-url]: https://ai.google.dev
+[Website-badge]: https://img.shields.io/badge/🌐_Kunjungi_Website-venditores.fsd.my.id-0A66C2?style=for-the-badge
+[Website-url]: https://venditores.fsd.my.id
