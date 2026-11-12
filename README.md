@@ -20,7 +20,13 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 
 </div>
 
----
+## 👥 Tim
+
+| Nama | NIM | Branch |
+|---|---|---|
+| Wesley Goeinawan | 0706012410011 | `wes` |
+| Angga Dhammika Jaya | 0706012410017 | `ang` |
+| Keane Juan Suryanto | 0706012410004 | `kin` |
 
 <details>
   <summary><b>📑 Daftar Isi</b></summary>
@@ -59,7 +65,6 @@ Panitia mengunggah **proposal PDF**, lalu **Google Gemini** menyusun daftar kebu
 >
 > 🌐 Website: **[venditores.fsd.my.id][Website-url]**
 
-<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
 
 ## 🔄 Alur Kerja
 
@@ -73,7 +78,6 @@ flowchart LR
     F --> G[📊 Pantau dashboard & risiko]
 ```
 
-<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
 
 ## ✨ Fitur
 
@@ -130,7 +134,6 @@ Per pengguna, per menit:
 | AI matching | 10 kali |
 | Pencarian vendor | 10 kali |
 
-<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
 
 ## 🚀 Menjalankan Project
 
@@ -188,17 +191,6 @@ npm install
 php artisan migrate
 ```
 
-<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
-
-## 👥 Tim
-
-| Nama | NIM | Branch |
-|---|---|---|
-| Wesley Goeinawan | 0706012410011 | `wes` |
-| Angga Dhammika Jaya | 0706012410017 | `ang` |
-| Keane Juan Suryanto | 0706012410004 | `kin` |
-
-<p align="right">(<a href="#readme-top">kembali ke atas</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [Laravel-badge]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
