@@ -20,6 +20,7 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 
 </div>
 
+---
 ## 👥 Tim
 
 | Nama | NIM | Branch |
