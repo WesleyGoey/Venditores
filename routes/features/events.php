@@ -8,7 +8,7 @@ use App\Http\Controllers\EventProposalController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
     Route::post('events/extract', [EventController::class, 'extract'])
         ->middleware('throttle:ai-analysis')
         ->name('events.extract');

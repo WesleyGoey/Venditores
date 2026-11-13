@@ -119,6 +119,8 @@ export interface RecommendedVendor {
     price_estimate: number | null;
     rating: number | null;
     reviews_count: number;
+    /** Only sent on a vendor need page: the category fits that need. */
+    matches_need?: boolean;
 }
 
 export interface VendorReview {
@@ -127,4 +129,14 @@ export interface VendorReview {
     rating: number;
     comment: string | null;
     created_at: string;
+}
+
+export interface UsedVendor {
+    name: string;
+    contact: string | null;
+    price: number;
+    notes: string | null;
+    category: string;
+    event: string;
+    event_date: string;
 }

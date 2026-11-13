@@ -13,6 +13,8 @@ class VendorReviewController extends Controller
      */
     public function store(Request $request, RecommendedVendor $vendor): RedirectResponse
     {
+        abort_if($request->user()->is_admin, 403, 'Admins cannot review vendors.');
+
         $data = $request->validate([
             'rating' => ['required', 'integer', 'between:1,5'],
             'comment' => ['nullable', 'string', 'max:1000'],

@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDate } from '@/lib/format';
-import { type RecommendedVendor, type VendorReview } from '@/types';
-import { router, useForm } from '@inertiajs/react';
+import { type RecommendedVendor, type SharedData, type VendorReview } from '@/types';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 interface VendorReviewsDialogProps {
@@ -14,6 +14,8 @@ interface VendorReviewsDialogProps {
 }
 
 export default function VendorReviewsDialog({ vendor }: VendorReviewsDialogProps) {
+    // Admins read reviews but never write them.
+    const canReview = !usePage<SharedData>().props.auth.user.is_admin;
     const { data, setData, put, processing, errors } = useForm({
         rating: vendor.my_review?.rating ?? 0,
         comment: vendor.my_review?.comment ?? '',
@@ -48,31 +50,33 @@ export default function VendorReviewsDialog({ vendor }: VendorReviewsDialogProps
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={submit} className="bg-muted/50 space-y-3 rounded-lg border p-4">
-                    <div className="grid gap-1.5">
-                        <Label>{vendor.my_review ? 'Your review' : 'Write a review'}</Label>
-                        <Stars value={data.rating} onChange={(rating) => setData('rating', rating)} size="size-5" />
-                        <InputError message={errors.rating} />
-                    </div>
-                    <Textarea
-                        rows={3}
-                        value={data.comment}
-                        onChange={(e) => setData('comment', e.target.value)}
-                        placeholder="How was working with them? (optional)"
-                        aria-label="Comment"
-                    />
-                    <InputError message={errors.comment} />
-                    <div className="flex gap-2">
-                        <Button size="sm" disabled={processing || data.rating === 0}>
-                            Save review
-                        </Button>
-                        {vendor.my_review && (
-                            <Button type="button" size="sm" variant="ghost" onClick={remove}>
-                                Delete
+                {canReview && (
+                    <form onSubmit={submit} className="bg-muted/50 space-y-3 rounded-lg border p-4">
+                        <div className="grid gap-1.5">
+                            <Label>{vendor.my_review ? 'Your review (one per vendor, you can change it)' : 'Write a review (one per vendor)'}</Label>
+                            <Stars value={data.rating} onChange={(rating) => setData('rating', rating)} size="size-5" />
+                            <InputError message={errors.rating} />
+                        </div>
+                        <Textarea
+                            rows={3}
+                            value={data.comment}
+                            onChange={(e) => setData('comment', e.target.value)}
+                            placeholder="How was working with them? (optional)"
+                            aria-label="Comment"
+                        />
+                        <InputError message={errors.comment} />
+                        <div className="flex gap-2">
+                            <Button size="sm" disabled={processing || data.rating === 0}>
+                                Save review
                             </Button>
-                        )}
-                    </div>
-                </form>
+                            {vendor.my_review && (
+                                <Button type="button" size="sm" variant="ghost" onClick={remove}>
+                                    Delete
+                                </Button>
+                            )}
+                        </div>
+                    </form>
+                )}
 
                 {vendor.reviews.length === 0 ? (
                     <p className="text-muted-foreground text-sm">No reviews yet.</p>

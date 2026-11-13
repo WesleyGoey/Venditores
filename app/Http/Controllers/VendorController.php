@@ -31,7 +31,7 @@ class VendorController extends Controller
                 ->with('user:id,name')
                 ->latest()
                 ->limit(self::REVIEWS_SHOWN)])
-            ->orderBy('category')
+            ->orderByRaw('lower(category)')
             ->orderBy('name')
             ->get()
             ->map(fn (RecommendedVendor $vendor): array => [

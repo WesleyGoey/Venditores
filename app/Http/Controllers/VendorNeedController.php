@@ -9,7 +9,9 @@ use App\Http\Requests\UpdateVendorNeedRequest;
 use App\Models\Event;
 use App\Models\RecommendedVendor;
 use App\Models\VendorNeed;
+use App\Services\VendorHistory;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +21,7 @@ class VendorNeedController extends Controller
     /**
      * Display a vendor need with its quotes.
      */
-    public function show(Event $event, VendorNeed $vendorNeed): Response
+    public function show(Request $request, Event $event, VendorNeed $vendorNeed, VendorHistory $history): Response
     {
         Gate::authorize('view', $event);
 
@@ -36,16 +38,18 @@ class VendorNeedController extends Controller
             ],
             'vendorNeed' => $vendorNeed,
             'recommendedVendors' => RecommendedVendor::query()
-                ->forCategory($vendorNeed->category)
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
+                ->orderByRaw('lower(category)')
                 ->orderBy('name')
                 ->get()
                 ->map(fn (RecommendedVendor $vendor): array => [
                     ...$vendor->only(['id', 'name', 'category', 'description', 'contact', 'website', 'price_estimate']),
                     'rating' => $vendor->reviews_avg_rating !== null ? round((float) $vendor->reviews_avg_rating, 1) : null,
                     'reviews_count' => $vendor->reviews_count,
+                    'matches_need' => $vendor->matchesCategory($vendorNeed->category),
                 ]),
+            'usedVendors' => $history->vendorsUsedBy($request->user(), $vendorNeed->id),
             'procurementStatuses' => array_map(
                 fn (ProcurementStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
                 ProcurementStatus::cases(),
