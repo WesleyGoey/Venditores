@@ -3,12 +3,8 @@ import AppLogoIcon from './app-logo-icon';
 export default function AppLogo() {
     return (
         <>
-            <div className="bg-primary flex aspect-square size-8 items-center justify-center rounded-md">
-                <AppLogoIcon className="size-5 fill-current text-white" />
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-none font-semibold">Venditores</span>
-            </div>
+            <AppLogoIcon className="fill-primary ml-1 size-5 shrink-0" />
+            <span className="font-display truncate font-semibold">Venditores</span>
         </>
     );
 }

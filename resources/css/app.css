@@ -1,68 +1,52 @@
 @import 'tailwindcss';
 
-
 @plugin 'tailwindcss-animate';
-
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
-
 @custom-variant dark (&:is(.dark *));
 
-
 @theme {
-    --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-
+    --font-sans: 'Onest', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Bricolage Grotesque', 'Onest', sans-serif;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
-
     --color-background: var(--background);
     --color-foreground: var(--foreground);
-
 
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
 
-
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
-
 
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
 
-
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
-
 
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
 
-
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
-
 
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
 
-
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
-
 
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
-
 
     --color-sidebar: var(--sidebar-background);
     --color-sidebar-foreground: var(--sidebar-foreground);
@@ -73,7 +57,6 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 }
-
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
@@ -93,7 +76,6 @@
         border-color: var(--border, currentColor);
     }
 }
-
 
 :root {
     /* Palette: #E8EBED paper, #17191D ink, #244CFF blue. Everything else is a tint of these. */
@@ -138,7 +120,6 @@
     --mesh-c: rgb(36 76 255 / 0.14);
 }
 
-
 .dark {
     --background: #17191d;
     --foreground: #e8ebed;
@@ -180,12 +161,16 @@
     --mesh-c: rgb(77 107 255 / 0.16);
 }
 
-
 @layer base {
     * {
         @apply border-border;
     }
 
+    h1,
+    h2,
+    h3 {
+        font-family: var(--font-display);
+    }
 
     body {
         @apply bg-background text-foreground;
@@ -198,12 +183,10 @@
     }
 }
 
-
 /* A field whose wrapper holds an error message gets a red border. */
 :has(> [role='alert']) > :is(input, textarea, [role='combobox']) {
     border-color: var(--destructive);
 }
-
 
 /* Frosted surface. Cards, the content panel and the landing page share it. */
 @utility glass {
@@ -214,7 +197,6 @@
     backdrop-filter: blur(20px) saturate(1.4);
 }
 
-
 @keyframes budget-split {
     from {
         clip-path: inset(0 100% 0 0);
@@ -223,7 +205,6 @@
         clip-path: inset(0 0 0 0);
     }
 }
-
 
 /* Landing sheet: a row lands with a brief blue cell highlight, its share bar draws in. */
 @keyframes rab-row {
@@ -239,7 +220,6 @@
     }
 }
 
-
 @keyframes rab-bar {
     from {
         transform: scaleX(0);
@@ -249,24 +229,20 @@
     }
 }
 
-
 .budget-split {
     animation: budget-split 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-
 
 .rab-row {
     animation: rab-row 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(var(--i) * 160ms + 300ms);
 }
 
-
 .rab-bar {
     transform-origin: left;
     animation: rab-bar 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(var(--i) * 160ms + 400ms);
 }
-
 
 @media (prefers-reduced-motion: reduce) {
     .budget-split,

@@ -130,7 +130,7 @@ export default function ShowVendorNeed({
                                 </Button>
                             }
                         />
-                        <Button variant="destructive" onClick={deleteNeed}>
+                        <Button variant="outline" className="text-destructive hover:text-destructive" onClick={deleteNeed}>
                             <Trash2 className="size-4" />
                             Delete
                         </Button>
@@ -156,13 +156,13 @@ export default function ShowVendorNeed({
                             <p className="text-sm leading-relaxed whitespace-pre-line">{vendorNeed.specification || 'No specification yet.'}</p>
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
                             <CardTitle className="text-lg">Budget</CardTitle>
                             <CardDescription>{formatPercentage(vendorNeed.allocated_budget, event.total_budget)} of the event budget</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-semibold tabular-nums">{formatRupiah(vendorNeed.allocated_budget)}</p>
+                            <p className="font-display text-xl font-semibold tabular-nums">{formatRupiah(vendorNeed.allocated_budget)}</p>
                         </CardContent>
                     </Card>
                 </div>

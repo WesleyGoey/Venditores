@@ -80,7 +80,7 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-xl font-semibold tracking-tight">Overview</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
                         <p className="text-muted-foreground text-sm">Status and risk of all your events.</p>
                     </div>
                     <Button asChild>

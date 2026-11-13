@@ -355,14 +355,11 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Venditores">
-                <link rel="preconnect" href="https://fonts.bunny.net" />
-                <link href="https://fonts.bunny.net/css?family=bricolage-grotesque:500,700|onest:400,500,600" rel="stylesheet" />
-            </Head>
+            <Head title="Venditores" />
 
             <div
                 className="relative min-h-screen overflow-x-clip text-[#17191D] selection:bg-[#244CFF] selection:text-white"
-                style={{ fontFamily: "'Onest', ui-sans-serif, system-ui, sans-serif", scrollBehavior: 'smooth' }}
+                style={{ scrollBehavior: 'smooth' }}
             >
                 <GlassBackdrop />
 

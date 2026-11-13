@@ -104,7 +104,7 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                                 Mark completed
                             </Button>
                         )}
-                        <Button variant="destructive" onClick={deleteEvent}>
+                        <Button variant="outline" className="text-destructive hover:text-destructive" onClick={deleteEvent}>
                             <Trash2 className="size-4" />
                             Delete
                         </Button>
