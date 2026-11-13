@@ -17,10 +17,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(BudgetAllocator $allocator): void
     {
-        User::factory()->admin()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-        ]);
+        $this->call(AdminSeeder::class);
 
         RecommendedVendor::insert([
             ['name' => 'Dapur Nusantara', 'category' => 'Catering', 'description' => 'Lunch boxes and buffet for 100 to 2,000 guests. Halal certified.', 'contact' => '0812-0000-0001', 'website' => null, 'price_estimate' => 45_000_000],
