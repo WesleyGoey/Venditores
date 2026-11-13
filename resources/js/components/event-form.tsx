@@ -129,7 +129,9 @@ export default function EventForm({ initialValues = {}, currentProposalName, sub
             </div>
 
             <div className="grid gap-2">
-                <Label htmlFor="name">Event name</Label>
+                <Label htmlFor="name" required>
+                    Event name
+                </Label>
                 <Input
                     id="name"
                     value={data.name}
@@ -142,7 +144,9 @@ export default function EventForm({ initialValues = {}, currentProposalName, sub
 
             <div className="grid gap-6 sm:grid-cols-2">
                 <div className="grid gap-2">
-                    <Label htmlFor="event_date">Date</Label>
+                    <Label htmlFor="event_date" required>
+                        Date
+                    </Label>
                     <Input id="event_date" type="date" value={data.event_date} onChange={(e) => setData('event_date', e.target.value)} required />
                     <InputError message={errors.event_date} />
                 </div>
@@ -155,7 +159,9 @@ export default function EventForm({ initialValues = {}, currentProposalName, sub
             </div>
 
             <div className="grid gap-2">
-                <Label htmlFor="total_budget">Total budget (Rp)</Label>
+                <Label htmlFor="total_budget" required>
+                    Total budget (Rp)
+                </Label>
                 <Input
                     id="total_budget"
                     type="number"

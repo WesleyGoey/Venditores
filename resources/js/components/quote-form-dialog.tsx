@@ -77,7 +77,9 @@ export default function QuoteFormDialog({ eventId, vendorNeedId, quote, defaults
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="vendor_name">Vendor name</Label>
+                            <Label htmlFor="vendor_name" required>
+                                Vendor name
+                            </Label>
                             <Input id="vendor_name" value={data.vendor_name} onChange={(e) => setData('vendor_name', e.target.value)} required />
                             <InputError message={errors.vendor_name} />
                         </div>
@@ -93,7 +95,9 @@ export default function QuoteFormDialog({ eventId, vendorNeedId, quote, defaults
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="price">Price (Rupiah)</Label>
+                        <Label htmlFor="price" required>
+                            Price (Rupiah)
+                        </Label>
                         <Input
                             id="price"
                             type="number"

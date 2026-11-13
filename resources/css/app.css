@@ -199,6 +199,12 @@
 }
 
 
+/* A field whose wrapper holds an error message gets a red border. */
+:has(> [role='alert']) > :is(input, textarea, [role='combobox']) {
+    border-color: var(--destructive);
+}
+
+
 /* Frosted surface. Cards, the content panel and the landing page share it. */
 @utility glass {
     background: var(--glass);

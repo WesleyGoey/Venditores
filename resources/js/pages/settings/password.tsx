@@ -58,10 +58,13 @@ export default function Password() {
 
                     <form onSubmit={updatePassword} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="current_password">Current password</Label>
+                            <Label htmlFor="current_password" required>
+                                Current password
+                            </Label>
 
                             <Input
                                 id="current_password"
+                                required
                                 ref={currentPasswordInput}
                                 value={data.current_password}
                                 onChange={(e) => setData('current_password', e.target.value)}
@@ -75,10 +78,13 @@ export default function Password() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password">New password</Label>
+                            <Label htmlFor="password" required>
+                                New password
+                            </Label>
 
                             <Input
                                 id="password"
+                                required
                                 ref={passwordInput}
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
@@ -92,10 +98,13 @@ export default function Password() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">Confirm password</Label>
+                            <Label htmlFor="password_confirmation" required>
+                                Confirm password
+                            </Label>
 
                             <Input
                                 id="password_confirmation"
+                                required
                                 value={data.password_confirmation}
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
                                 type="password"

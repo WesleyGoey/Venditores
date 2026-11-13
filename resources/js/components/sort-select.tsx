@@ -13,10 +13,11 @@ export default function SortSelect<T extends string>({ value, onChange, options,
     return (
         <Select value={value} onValueChange={(next) => onChange(next as T)}>
             <SelectTrigger className={cn('w-full sm:w-56', className)} aria-label="Sort by">
-                <span className="flex items-center gap-2">
+                {/* A div, not a span: SelectTrigger line-clamps its direct span children, which breaks the flex row into two lines. */}
+                <div className="flex min-w-0 items-center gap-2">
                     <ArrowUpDown className="size-4 shrink-0 opacity-60" />
                     <SelectValue />
-                </span>
+                </div>
             </SelectTrigger>
             <SelectContent>
                 {options.map((option) => (

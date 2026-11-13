@@ -32,9 +32,12 @@ export default function ConfirmPassword() {
             <form onSubmit={submit}>
                 <div className="space-y-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" required>
+                            Password
+                        </Label>
                         <Input
                             id="password"
+                            required
                             type="password"
                             name="password"
                             placeholder="Password"

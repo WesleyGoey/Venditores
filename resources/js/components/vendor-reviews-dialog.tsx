@@ -53,7 +53,9 @@ export default function VendorReviewsDialog({ vendor }: VendorReviewsDialogProps
                 {canReview && (
                     <form onSubmit={submit} className="bg-muted/50 space-y-3 rounded-lg border p-4">
                         <div className="grid gap-1.5">
-                            <Label>{vendor.my_review ? 'Your review (one per vendor, you can change it)' : 'Write a review (one per vendor)'}</Label>
+                            <Label required>
+                                {vendor.my_review ? 'Your review (one per vendor, you can change it)' : 'Write a review (one per vendor)'}
+                            </Label>
                             <Stars value={data.rating} onChange={(rating) => setData('rating', rating)} size="size-5" />
                             <InputError message={errors.rating} />
                         </div>

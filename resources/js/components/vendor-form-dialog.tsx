@@ -25,7 +25,7 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
     const [open, setOpen] = useState(false);
     const isEditing = vendor !== undefined;
 
-    const { data, setData, post, patch, processing, errors, reset, clearErrors } = useForm<VendorFormData>({
+    const { data, setData, post, patch, processing, errors, reset, clearErrors, setError } = useForm<VendorFormData>({
         name: vendor?.name ?? '',
         category: vendor?.category ?? '',
         description: vendor?.description ?? '',
@@ -36,6 +36,13 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+
+        // A Select can't use the native `required` check.
+        if (!data.category) {
+            setError('category', 'Choose a category.');
+
+            return;
+        }
 
         const options = {
             preserveScroll: true,
@@ -72,13 +79,23 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="vendor-name">Name</Label>
+                            <Label htmlFor="vendor-name" required>
+                                Name
+                            </Label>
                             <Input id="vendor-name" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
                             <InputError message={errors.name} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="vendor-category">Category</Label>
-                            <Select value={data.category} onValueChange={(category) => setData('category', category)}>
+                            <Label htmlFor="vendor-category" required>
+                                Category
+                            </Label>
+                            <Select
+                                value={data.category}
+                                onValueChange={(category) => {
+                                    setData('category', category);
+                                    clearErrors('category');
+                                }}
+                            >
                                 <SelectTrigger id="vendor-category" aria-label="Category">
                                     <SelectValue placeholder="Choose a category" />
                                 </SelectTrigger>
@@ -123,7 +140,6 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
                                 onChange={(e) => setData('website', e.target.value)}
                                 placeholder="https://instagram.com/vendor"
                             />
-                            <p className="text-muted-foreground text-xs">Instagram, TikTok, Facebook, WhatsApp or a website. Optional.</p>
                             <InputError message={errors.website} />
                         </div>
                     </div>

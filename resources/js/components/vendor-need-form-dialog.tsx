@@ -72,7 +72,9 @@ export default function VendorNeedFormDialog({ eventId, vendorNeed, trigger }: V
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="category">Category</Label>
+                        <Label htmlFor="category" required>
+                            Category
+                        </Label>
                         <Input
                             id="category"
                             list="vendor-categories"
@@ -100,7 +102,9 @@ export default function VendorNeedFormDialog({ eventId, vendorNeed, trigger }: V
                         <InputError message={errors.specification} />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="allocated_budget">Allocated budget (Rupiah)</Label>
+                        <Label htmlFor="allocated_budget" required>
+                            Allocated budget (Rupiah)
+                        </Label>
                         <Input
                             id="allocated_budget"
                             type="number"
