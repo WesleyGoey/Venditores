@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { formatRupiah } from '@/lib/format';
+import { xsrfToken } from '@/lib/xsrf';
 import { router } from '@inertiajs/react';
 import { ExternalLink, Globe, LoaderCircle, Plus, Search } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
@@ -25,12 +26,6 @@ interface VendorSearchDialogProps {
     vendorNeedId: number;
     category: string;
     location: string | null;
-}
-
-function xsrfToken(): string {
-    const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
-
-    return match ? decodeURIComponent(match[1]) : '';
 }
 
 export default function VendorSearchDialog({ eventId, vendorNeedId, category, location }: VendorSearchDialogProps) {

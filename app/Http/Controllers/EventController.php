@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateEventRequest;
 use App\Models\Event;
 use App\Services\Gemini\ProposalExtractor;
 use App\Services\RiskMonitor;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -58,6 +59,21 @@ class EventController extends Controller
     /**
      * Store a newly created event.
      */
+    /**
+     * Read the basic details from a proposal PDF so the form can fill itself in.
+     * Nothing is saved here.
+     */
+    public function extract(Request $request, ProposalExtractor $extractor): JsonResponse
+    {
+        $request->validate([
+            'proposal' => ['required', 'file', 'mimes:pdf', 'max:'.StoreEventRequest::MAX_PROPOSAL_KILOBYTES],
+        ]);
+
+        set_time_limit(180);
+
+        return response()->json((object) $extractor->extract((string) file_get_contents($request->file('proposal')->getRealPath())));
+    }
+
     public function store(StoreEventRequest $request, ProposalExtractor $extractor): RedirectResponse
     {
         $details = $request->safe()->except('proposal');

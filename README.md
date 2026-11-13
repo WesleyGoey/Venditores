@@ -87,7 +87,7 @@ flowchart LR
 | | Fitur | Penjelasan |
 |:---:|---|---|
 | 🔐 | **Akun** | Daftar, login, reset password, dan verifikasi email. |
-| 📅 | **Event** | Cukup upload proposal PDF (maks. 10 MB). AI mengisi nama, tanggal, lokasi, anggaran, dan deskripsi. Semua bisa diubah setelahnya. |
+| 📅 | **Event** | Cukup pilih proposal PDF (maks. 10 MB). Kolom nama, tanggal, lokasi, anggaran, dan deskripsi langsung terisi dari isi proposal. Semua bisa diubah. |
 | 🤖 | **Analisis proposal** | Gemini membaca proposal lalu menulis ringkasan, skala acara, perkiraan peserta, dan kategori vendor beserta persentase anggaran. Persentase itu diubah menjadi Rupiah sehingga total alokasi selalu sama dengan anggaran event. |
 | 📋 | **Kebutuhan vendor** | Tambah, ubah, hapus, dan tandai sebagai vital. Panel anggaran menunjukkan total, yang sudah dialokasikan, dan sisanya. |
 | ⭐ | **Vendor rekomendasi** | Daftar vendor dari admin. Muncul otomatis di kebutuhan vendor dengan kategori yang sama dan bisa langsung dijadikan penawaran. |
@@ -203,7 +203,13 @@ Tersedia setelah `php artisan db:seed`. Seeder ini hanya untuk lokal.
 | Email | Password |
 |---|---|
 | `test@example.com` | `password` |
-| `admin@example.com` (admin) | `password` |
+| `admin@gmail.com` (admin) | `admin123` |
+
+Akun admin juga bisa dibuat atau di-reset tanpa menghapus data lain:
+
+```bash
+php artisan db:seed --class=AdminSeeder
+```
 
 Untuk menjadikan akun lain admin, misalnya di server:
 

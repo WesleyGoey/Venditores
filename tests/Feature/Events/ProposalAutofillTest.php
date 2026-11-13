@@ -118,3 +118,33 @@ test('the proposal pdf is sent to Gemini for extraction', function () {
 
     Http::assertSent(fn (Request $request) => ($request['contents'][0]['parts'][0]['inlineData']['mimeType'] ?? null) === 'application/pdf');
 });
+
+test('the form can read a proposal without saving anything', function () {
+    Http::fake([geminiEndpoint() => Http::response(geminiResponse([
+        'name' => 'NPLC', 'event_date' => '2027-03-01', 'location' => 'Surabaya', 'total_budget' => 50_000_000, 'description' => null,
+    ]))]);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->postJson(route('events.extract'), ['proposal' => proposalFile()])
+        ->assertOk()
+        ->assertExactJson(['name' => 'NPLC', 'event_date' => '2027-03-01', 'location' => 'Surabaya', 'total_budget' => 50_000_000]);
+
+    expect($user->events()->count())->toBe(0);
+});
+
+test('reading a proposal needs a pdf and a signed in user', function () {
+    $this->postJson(route('events.extract'))->assertUnauthorized();
+
+    $this->actingAs(User::factory()->create())
+        ->postJson(route('events.extract'), ['proposal' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain')])
+        ->assertJsonValidationErrors('proposal');
+});
+
+test('a Gemini failure while reading returns a json error', function () {
+    Http::fake([geminiEndpoint() => Http::response([], 503)]);
+
+    $this->actingAs(User::factory()->create())
+        ->postJson(route('events.extract'), ['proposal' => proposalFile()])
+        ->assertStatus(502)
+        ->assertJsonStructure(['message']);
+});

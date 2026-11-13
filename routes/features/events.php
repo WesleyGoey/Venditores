@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('events/extract', [EventController::class, 'extract'])
+        ->middleware('throttle:ai-analysis')
+        ->name('events.extract');
+
     Route::resource('events', EventController::class);
 
 
