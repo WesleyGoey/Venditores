@@ -5,10 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { formatDate, formatRupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { type RecommendedVendor, type UsedVendor } from '@/types';
-import { type ReactNode } from 'react';
 import { Link } from '@inertiajs/react';
-import { ExternalLink, Plus, SearchX } from 'lucide-react';
-import { Fragment, useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, ExternalLink, Plus, SearchX } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 
 interface VendorPickerProps {
     eventId: number;
@@ -22,9 +21,11 @@ interface VendorPickerProps {
 
 type Tab = 'recommended' | 'history';
 
-/** Filter keys: the need's own category, every category, or one category name. */
-const SAME = '__same__';
-const ALL = '__all__';
+/** Only two filters: the need's own and related categories, or everything else. */
+type Filter = 'same' | 'other';
+
+/** Vendors per page, two rows of the two-column grid. */
+const PAGE_SIZE = 4;
 
 function fits(a: string, b: string): boolean {
     const x = a.trim().toLowerCase();
@@ -33,13 +34,9 @@ function fits(a: string, b: string): boolean {
     return x !== '' && y !== '' && (x.includes(y) || y.includes(x));
 }
 
-/** 0 = same category as the need, 1 = related category, 2 = anything else. */
-function rank(category: string, needCategory: string, related: string[]): 0 | 1 | 2 {
-    if (fits(category, needCategory)) {
-        return 0;
-    }
-
-    return related.some((name) => fits(category, name)) ? 1 : 2;
+/** True when the category is the need's own or one that goes with it (e.g. Catering and Consumption). */
+function isSame(category: string, needCategory: string, related: string[]): boolean {
+    return fits(category, needCategory) || related.some((name) => fits(category, name));
 }
 
 interface VendorCardProps {
@@ -95,38 +92,28 @@ function VendorCard({ eventId, vendorNeedId, name, category, rating, text, price
 /** Pick a vendor the admin recommends, or one you used before, and add it as a quote. */
 export default function VendorPicker({ eventId, vendorNeedId, needCategory, relatedCategories, recommended, used }: VendorPickerProps) {
     const [tab, setTab] = useState<Tab>('recommended');
-    const [filter, setFilter] = useState<string>(SAME);
+    const [filter, setFilter] = useState<Filter>('same');
+    const [page, setPage] = useState(1);
 
-    // Chips: the same category first, then related ones, then the rest, then everything.
-    const chips = useMemo(() => {
-        const names = Array.from(new Set((tab === 'recommended' ? recommended : used).map((item) => item.category)));
-        const others = names.filter((name) => rank(name, needCategory, relatedCategories) > 0);
-        const sorted = others.sort(
-            (a, b) => rank(a, needCategory, relatedCategories) - rank(b, needCategory, relatedCategories) || a.localeCompare(b),
-        );
-
-        return [
-            { key: SAME, label: needCategory, group: 'Same' },
-            ...sorted.map((name) => ({
-                key: name,
-                label: name,
-                group: rank(name, needCategory, relatedCategories) === 1 ? 'Related' : 'Other',
-            })),
-            { key: ALL, label: 'All', group: '' },
-        ];
-    }, [tab, recommended, used, needCategory, relatedCategories]);
-
-    const keep = (category: string) =>
-        filter === ALL || (filter === SAME ? rank(category, needCategory, relatedCategories) === 0 : category === filter);
-
-    const changeTab = (next: Tab) => {
-        setTab(next);
-        setFilter(SAME);
-    };
+    const keep = (category: string) => isSame(category, needCategory, relatedCategories) === (filter === 'same');
 
     const shownRecommended = recommended.filter((vendor) => keep(vendor.category));
     const shownUsed = used.filter((vendor) => keep(vendor.category));
-    const empty = tab === 'recommended' ? shownRecommended.length === 0 : shownUsed.length === 0;
+    const total = tab === 'recommended' ? shownRecommended.length : shownUsed.length;
+    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const current = Math.min(page, pages);
+    const slice = <T,>(items: T[]) => items.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+
+    const count = (items: { category: string }[], want: Filter) =>
+        items.filter((item) => isSame(item.category, needCategory, relatedCategories) === (want === 'same')).length;
+    const tabItems = tab === 'recommended' ? recommended : used;
+
+    const change = (next: () => void) => {
+        next();
+        setPage(1);
+    };
+
+    const sameLabel = [needCategory, ...relatedCategories].join(', ');
 
     return (
         <Card>
@@ -135,66 +122,71 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                     <CardTitle className="text-lg">Pick a vendor</CardTitle>
                     <CardDescription>Choose one and add it straight to your quotes.</CardDescription>
                 </div>
-                <div className="inline-flex self-start rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5" role="tablist">
+                <div
+                    className="inline-flex self-start rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5"
+                    role="tablist"
+                >
                     {(
                         [
                             ['recommended', 'Recommended', recommended.length],
                             ['history', 'History', used.length],
                         ] as const
-                    ).map(([value, label, count]) => (
+                    ).map(([value, label, n]) => (
                         <button
                             key={value}
                             type="button"
                             role="tab"
                             aria-selected={tab === value}
-                            onClick={() => changeTab(value)}
+                            onClick={() => change(() => setTab(value))}
                             className={cn(
                                 'rounded-lg px-3 py-1.5 font-medium transition-colors',
                                 tab === value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
                             )}
                         >
-                            {label} <span className="opacity-70">{count}</span>
+                            {label} <span className="opacity-70">{n}</span>
                         </button>
                     ))}
                 </div>
             </CardHeader>
             <CardContent className="space-y-5">
-                <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-1" aria-label="Filter by category">
-                    {chips.map((chip, index) => (
-                        <Fragment key={chip.key}>
-                            {chip.group && chip.group !== chips[index - 1]?.group && (
-                                <span className="text-muted-foreground ml-3 shrink-0 text-xs first:ml-0">{chip.group}</span>
+                <div className="flex flex-wrap items-center gap-2" aria-label="Filter by category">
+                    {(
+                        [
+                            ['same', 'Same category'],
+                            ['other', 'Other'],
+                        ] as const
+                    ).map(([value, label]) => (
+                        <button
+                            key={value}
+                            type="button"
+                            onClick={() => change(() => setFilter(value))}
+                            aria-pressed={filter === value}
+                            className={cn(
+                                'rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors',
+                                filter === value
+                                    ? 'border-primary bg-primary text-primary-foreground'
+                                    : 'border-white/70 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10',
                             )}
-                            <button
-                                type="button"
-                                onClick={() => setFilter(chip.key)}
-                                aria-pressed={filter === chip.key}
-                                className={cn(
-                                    'shrink-0 rounded-full border px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors',
-                                    filter === chip.key
-                                        ? 'border-primary bg-primary text-primary-foreground'
-                                        : 'border-white/70 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10',
-                                )}
-                            >
-                                {chip.label}
-                            </button>
-                        </Fragment>
+                        >
+                            {label} <span className="opacity-70">{count(tabItems, value)}</span>
+                        </button>
                     ))}
+                    {filter === 'same' && <span className="text-muted-foreground text-xs">{sameLabel}</span>}
                 </div>
 
-                {empty ? (
+                {total === 0 ? (
                     <div className="text-muted-foreground flex flex-col items-center gap-2 rounded-xl border border-dashed border-black/10 px-4 py-10 text-center text-sm dark:border-white/15">
                         <SearchX className="size-6 opacity-60" />
                         <p className="max-w-sm">
                             {tab === 'recommended'
-                                ? 'No recommended vendors in this category yet. Check the related categories.'
+                                ? 'No recommended vendors here yet. Try the Other filter.'
                                 : 'No vendors used before. Vendors you choose in an event show up here.'}
                         </p>
                     </div>
                 ) : (
                     <ul className="grid gap-3 md:grid-cols-2">
                         {tab === 'recommended'
-                            ? shownRecommended.map((vendor) => (
+                            ? slice(shownRecommended).map((vendor) => (
                                   <VendorCard
                                       key={vendor.id}
                                       eventId={eventId}
@@ -231,7 +223,7 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                                       }}
                                   />
                               ))
-                            : shownUsed.map((vendor) => (
+                            : slice(shownUsed).map((vendor) => (
                                   <VendorCard
                                       key={`${vendor.name}-${vendor.category}`}
                                       eventId={eventId}
@@ -253,11 +245,38 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                     </ul>
                 )}
 
-                <p className="text-muted-foreground text-xs">
-                    <Link href={route('vendors.index')} className="hover:text-foreground hover:underline">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <Link href={route('vendors.index')} className="text-muted-foreground hover:text-foreground text-xs hover:underline">
                         See all vendors and reviews
                     </Link>
-                </p>
+                    {pages > 1 && (
+                        <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground text-xs tabular-nums">
+                                {(current - 1) * PAGE_SIZE + 1}–{Math.min(current * PAGE_SIZE, total)} of {total}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                aria-label="Previous page"
+                                disabled={current === 1}
+                                onClick={() => setPage(current - 1)}
+                            >
+                                <ChevronLeft className="size-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                aria-label="Next page"
+                                disabled={current === pages}
+                                onClick={() => setPage(current + 1)}
+                            >
+                                <ChevronRight className="size-4" />
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </CardContent>
         </Card>
     );

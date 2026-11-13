@@ -1,8 +1,9 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import GlassBackdrop from '@/components/glass-backdrop';
 import { formatRupiah } from '@/lib/format';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, FileText, Scale, Store } from 'lucide-react';
+import { ArrowRight, Check, FileText, Scale, Sparkles, Store, Wallet } from 'lucide-react';
 
 const exampleBudget = 150_000_000;
 
@@ -15,19 +16,32 @@ const exampleAllocation = [
     { category: 'Printing', percentage: 5, color: '#9AA1AA' },
 ];
 
-const features = [
+const exampleOffers = [
+    { vendor: 'Rasa Nusantara Catering', price: 41_000_000, score: 92, best: true },
+    { vendor: 'Dapur Kita', price: 39_500_000, score: 81, best: false },
+    { vendor: 'Boga Prima', price: 48_000_000, score: 64, best: false },
+];
+
+const steps = [
     { icon: FileText, title: 'Upload a proposal', text: 'AI fills in your event details, lists the vendors you need and splits the budget.' },
     { icon: Store, title: 'Find vendors', text: 'Pick from admin recommendations with reviews, or search the web.' },
     { icon: Scale, title: 'Compare offers', text: 'Every offer is scored on fit and price. Cheaper scores higher.' },
 ];
 
+const navLinks = [
+    { href: '#preview', label: 'Preview' },
+    { href: '#how-it-works', label: 'How it works' },
+    { href: '#start', label: 'Get started' },
+];
+
 const displayFont = { fontFamily: "'Bricolage Grotesque', 'Instrument Sans', sans-serif" };
 
-/** Frosted glass surface used across this page. */
-const glass = 'glass';
+const primaryButton =
+    'inline-flex items-center justify-center gap-2 rounded-full bg-[#244CFF] font-medium text-white transition-colors hover:bg-[#1B3BE0]';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
+    const cta = auth.user ? route('dashboard') : route('register');
 
     return (
         <>
@@ -36,107 +50,190 @@ export default function Welcome() {
                 <link href="https://fonts.bunny.net/css?family=bricolage-grotesque:500,700|instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
 
-            <div className="relative min-h-screen overflow-hidden bg-[#E8EBED] text-[#17191D]">
-                {/* Color behind the glass. Radial gradients, not blur-3xl blobs: those render with a hard clipped edge in Safari. */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none fixed inset-0"
-                    style={{
-                        backgroundImage:
-                            'radial-gradient(48rem 36rem at 0% 0%, rgba(36,76,255,.38), transparent 70%), radial-gradient(40rem 32rem at 100% 40%, rgba(23,25,29,.16), transparent 70%), radial-gradient(44rem 30rem at 30% 100%, rgba(36,76,255,.22), transparent 70%)',
-                    }}
-                />
+            <div className="relative min-h-screen overflow-x-clip scroll-smooth text-[#17191D]">
+                <GlassBackdrop />
 
-                <div className="relative mx-auto max-w-5xl px-6">
-                    <header className={`mt-6 flex items-center justify-between rounded-full px-5 py-3 ${glass}`}>
+                <div className="mx-auto max-w-6xl px-6">
+                    <header className="glass sticky top-4 z-20 mt-4 grid grid-cols-[1fr_auto] items-center rounded-full px-5 py-2.5 md:grid-cols-[1fr_auto_1fr]">
                         <Link href={route('home')} className="flex items-center gap-2 font-semibold" style={displayFont}>
                             <AppLogoIcon className="size-5 fill-[#244CFF]" />
                             Venditores
                         </Link>
-                        <nav className="flex items-center gap-1 text-sm font-medium">
+                        <nav className="hidden items-center gap-1 text-sm font-medium text-[#5B616A] md:flex">
+                            {navLinks.map((link) => (
+                                <a
+                                    key={link.href}
+                                    href={link.href}
+                                    className="rounded-full px-4 py-1.5 transition-colors hover:bg-white/70 hover:text-[#17191D]"
+                                >
+                                    {link.label}
+                                </a>
+                            ))}
+                        </nav>
+                        <div className="flex items-center justify-end gap-1 text-sm font-medium">
                             {auth.user ? (
-                                <Link href={route('dashboard')} className="rounded-full bg-[#244CFF] px-4 py-1.5 text-white hover:bg-[#1B3BE0]">
+                                <Link href={route('dashboard')} className={`${primaryButton} px-4 py-1.5`}>
                                     Dashboard
                                 </Link>
                             ) : (
                                 <>
-                                    <Link href={route('login')} className="rounded-full px-4 py-1.5 hover:bg-white/60">
+                                    <Link href={route('login')} className="rounded-full px-4 py-1.5 hover:bg-white/70">
                                         Log in
                                     </Link>
-                                    <Link href={route('register')} className="rounded-full bg-[#244CFF] px-4 py-1.5 text-white hover:bg-[#1B3BE0]">
+                                    <Link href={route('register')} className={`${primaryButton} px-4 py-1.5`}>
                                         Sign up
                                     </Link>
                                 </>
                             )}
-                        </nav>
+                        </div>
                     </header>
 
                     <main>
-                        <section className="pt-20 pb-14 text-center sm:pt-28">
-                            <h1 className="mx-auto max-w-3xl text-5xl leading-[1.05] font-bold tracking-tight sm:text-6xl" style={displayFont}>
-                                From proposal to vendor plan.
+                        <section className="pt-20 pb-16 text-center sm:pt-28">
+                            <span className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
+                                <Sparkles className="size-4 text-[#244CFF]" />
+                                AI vendor planning for event committees
+                            </span>
+                            <h1 className="mx-auto mt-6 max-w-4xl text-5xl leading-[1.04] font-bold tracking-tight sm:text-7xl" style={displayFont}>
+                                From proposal to{' '}
+                                <span className="bg-gradient-to-r from-[#244CFF] to-[#7A8FFF] bg-clip-text text-transparent">vendor plan.</span>
                             </h1>
-                            <p className="mx-auto mt-5 max-w-xl text-lg text-[#5B616A]">
+                            <p className="mx-auto mt-6 max-w-xl text-lg text-[#5B616A]">
                                 Upload your event proposal. Venditores lists the vendors you need, splits the budget and helps you pick the best
                                 offer.
                             </p>
-                            <div className="mt-8 flex flex-wrap justify-center gap-3">
-                                <Link
-                                    href={auth.user ? route('dashboard') : route('register')}
-                                    className="inline-flex items-center gap-2 rounded-full bg-[#244CFF] px-6 py-3 font-medium text-white shadow-[0_8px_24px_rgba(36,76,255,0.35)] hover:bg-[#1B3BE0]"
-                                >
+                            <div className="mt-9 flex flex-wrap justify-center gap-3">
+                                <Link href={cta} className={`${primaryButton} px-7 py-3.5 shadow-[0_8px_24px_rgba(36,76,255,0.35)]`}>
                                     {auth.user ? 'Open dashboard' : 'Get started'}
                                     <ArrowRight className="size-4" />
                                 </Link>
                                 {!auth.user && (
-                                    <Link href={route('login')} className={`rounded-full px-6 py-3 font-medium hover:bg-white/60 ${glass}`}>
+                                    <Link href={route('login')} className="glass rounded-full px-7 py-3.5 font-medium hover:bg-white/70">
                                         Log in
                                     </Link>
                                 )}
                             </div>
                         </section>
 
-                        <section aria-label="Example budget split" className={`rounded-3xl p-6 sm:p-8 ${glass}`}>
-                            <div className="flex flex-wrap items-baseline justify-between gap-2">
-                                <p className="text-sm text-[#5B616A]">Example: two-day tech festival, 800 people</p>
-                                <p className="text-2xl font-bold tabular-nums" style={displayFont}>
-                                    {formatRupiah(exampleBudget)}
+                        <section id="preview" aria-label="Product preview" className="grid scroll-mt-24 gap-4 lg:grid-cols-5">
+                            <div className="glass rounded-3xl p-6 sm:p-8 lg:col-span-3">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p className="flex items-center gap-2 text-sm font-medium">
+                                            <Wallet className="size-4 text-[#244CFF]" />
+                                            Budget split
+                                        </p>
+                                        <p className="mt-1 text-sm text-[#5B616A]">Example: two-day tech festival, 800 people</p>
+                                    </div>
+                                    <p className="text-2xl font-bold tabular-nums sm:text-3xl" style={displayFont}>
+                                        {formatRupiah(exampleBudget)}
+                                    </p>
+                                </div>
+
+                                <div className="budget-split mt-6 flex h-4 overflow-hidden rounded-full" aria-hidden="true">
+                                    {exampleAllocation.map((item) => (
+                                        <div key={item.category} style={{ width: `${item.percentage}%`, backgroundColor: item.color }} />
+                                    ))}
+                                </div>
+
+                                <ul className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                                    {exampleAllocation.map((item) => (
+                                        <li key={item.category} className="flex items-center gap-3">
+                                            <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                                            <span className="flex-1 text-sm">{item.category}</span>
+                                            <span className="text-sm text-[#5B616A] tabular-nums">
+                                                {formatRupiah((exampleBudget * item.percentage) / 100)}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div className="glass flex flex-col rounded-3xl p-6 sm:p-8 lg:col-span-2">
+                                <p className="flex items-center gap-2 text-sm font-medium">
+                                    <Scale className="size-4 text-[#244CFF]" />
+                                    Offer comparison
                                 </p>
-                            </div>
+                                <p className="mt-1 text-sm text-[#5B616A]">Example: catering, budget {formatRupiah(42_000_000)}</p>
 
-                            <div className="budget-split mt-5 flex h-4 overflow-hidden rounded-full" aria-hidden="true">
-                                {exampleAllocation.map((item) => (
-                                    <div key={item.category} style={{ width: `${item.percentage}%`, backgroundColor: item.color }} />
-                                ))}
+                                <ul className="mt-6 flex flex-1 flex-col gap-3">
+                                    {exampleOffers.map((offer) => (
+                                        <li
+                                            key={offer.vendor}
+                                            className={`flex items-center gap-3 rounded-2xl border p-3.5 ${
+                                                offer.best ? 'border-[#244CFF]/50 bg-[#244CFF]/10' : 'border-white/70 bg-white/40'
+                                            }`}
+                                        >
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-semibold">{offer.vendor}</p>
+                                                <p className="text-xs text-[#5B616A] tabular-nums">{formatRupiah(offer.price)}</p>
+                                            </div>
+                                            {offer.best && (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-[#244CFF] px-2 py-0.5 text-xs font-medium text-white">
+                                                    <Check className="size-3" />
+                                                    Best
+                                                </span>
+                                            )}
+                                            <span className="w-9 text-right text-xl font-bold tabular-nums" style={displayFont}>
+                                                {offer.score}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-
-                            <ul className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
-                                {exampleAllocation.map((item) => (
-                                    <li key={item.category} className="flex items-center gap-3">
-                                        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                                        <span className="flex-1 text-sm">{item.category}</span>
-                                        <span className="text-sm text-[#5B616A] tabular-nums">
-                                            {formatRupiah((exampleBudget * item.percentage) / 100)}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
                         </section>
 
-                        <section className="grid gap-4 py-6 sm:grid-cols-3">
-                            {features.map((feature) => (
-                                <div key={feature.title} className={`rounded-2xl p-6 ${glass}`}>
-                                    <span className="flex size-10 items-center justify-center rounded-xl bg-[#244CFF] text-white">
-                                        <feature.icon className="size-5" />
-                                    </span>
-                                    <h3 className="mt-4 font-semibold">{feature.title}</h3>
-                                    <p className="mt-1.5 text-sm leading-relaxed text-[#5B616A]">{feature.text}</p>
-                                </div>
-                            ))}
+                        <section id="how-it-works" className="scroll-mt-24 pt-24">
+                            <div className="mx-auto max-w-xl text-center">
+                                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl" style={displayFont}>
+                                    Three steps, one plan.
+                                </h2>
+                                <p className="mt-3 text-[#5B616A]">No spreadsheets. No chasing offers across chats.</p>
+                            </div>
+                            <ol className="mt-10 grid gap-4 md:grid-cols-3">
+                                {steps.map((step, index) => (
+                                    <li key={step.title} className="glass relative rounded-3xl p-7">
+                                        <span className="absolute top-6 right-7 text-5xl font-bold text-[#17191D]/10" style={displayFont}>
+                                            {index + 1}
+                                        </span>
+                                        <span className="flex size-11 items-center justify-center rounded-2xl bg-[#244CFF] text-white shadow-[0_8px_20px_rgba(36,76,255,0.3)]">
+                                            <step.icon className="size-5" />
+                                        </span>
+                                        <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-[#5B616A]">{step.text}</p>
+                                    </li>
+                                ))}
+                            </ol>
+                        </section>
+
+                        <section id="start" className="scroll-mt-24 py-24">
+                            <div className="glass relative overflow-hidden rounded-3xl px-6 py-14 text-center sm:px-12">
+                                <div
+                                    aria-hidden
+                                    className="pointer-events-none absolute inset-0"
+                                    style={{ backgroundImage: 'radial-gradient(40rem 20rem at 50% 120%, rgba(36,76,255,.25), transparent 70%)' }}
+                                />
+                                <h2 className="relative text-3xl font-bold tracking-tight sm:text-4xl" style={displayFont}>
+                                    Ready to plan your next event?
+                                </h2>
+                                <p className="relative mx-auto mt-3 max-w-md text-[#5B616A]">
+                                    Upload a proposal and see your vendor list in minutes.
+                                </p>
+                                <Link href={cta} className={`${primaryButton} relative mt-8 px-7 py-3.5 shadow-[0_8px_24px_rgba(36,76,255,0.35)]`}>
+                                    {auth.user ? 'Open dashboard' : 'Create your account'}
+                                    <ArrowRight className="size-4" />
+                                </Link>
+                            </div>
                         </section>
                     </main>
 
-                    <footer className="py-10" />
+                    <footer className="flex items-center justify-between gap-4 border-t border-[#17191D]/10 py-8 text-sm text-[#5B616A]">
+                        <span className="flex items-center gap-2 font-semibold text-[#17191D]" style={displayFont}>
+                            <AppLogoIcon className="size-4 fill-[#244CFF]" />
+                            Venditores
+                        </span>
+                        <span>{new Date().getFullYear()}</span>
+                    </footer>
                 </div>
             </div>
         </>

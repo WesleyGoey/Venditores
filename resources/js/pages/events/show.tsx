@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatDaysRemaining, formatPercentage, formatRupiah } from '@/lib/format';
 import { type BreadcrumbItem, type Option, type ProcurementStatus, type RiskAssessment, type VenditoresEvent } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { CheckCircle2, FileText, LoaderCircle, MapPin, Pencil, Plus, RotateCcw, ShieldAlert, Sparkles, Trash2 } from 'lucide-react';
+import { CheckCircle2, ChevronRight, FileText, LoaderCircle, MapPin, Pencil, Plus, RotateCcw, ShieldAlert, Sparkles, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface ShowEventProps {
@@ -206,57 +206,75 @@ export default function ShowEvent({ event, risk, procurementStatuses }: ShowEven
                         {event.vendor_needs.length === 0 ? (
                             <p className="text-muted-foreground py-6 text-center text-sm">No vendor needs yet. Analyze the proposal or add one.</p>
                         ) : (
-                            <div className="-mx-6 overflow-x-auto">
-                                <table className="w-full min-w-[720px] text-sm">
-                                    <thead>
-                                        <tr className="text-muted-foreground border-b text-left text-xs">
-                                            <th className="px-6 py-2 font-medium">Category</th>
-                                            <th className="px-2 py-2 text-right font-medium">Budget</th>
-                                            <th className="px-2 py-2 font-medium">Status</th>
-                                            <th className="px-2 py-2 text-right font-medium">Quotes</th>
-                                            <th className="px-6 py-2 text-right font-medium">Best match</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {event.vendor_needs.map((need) => (
-                                            <tr key={need.id} className="border-b last:border-0">
-                                                <td className="max-w-md px-6 py-3 align-top">
-                                                    <div className="flex items-center gap-2">
+                            <ul className="grid gap-3 lg:grid-cols-2">
+                                {event.vendor_needs.map((need) => {
+                                    const share = event.total_budget > 0 ? Math.min(100, (need.allocated_budget / event.total_budget) * 100) : 0;
+
+                                    return (
+                                        <li
+                                            key={need.id}
+                                            className="flex flex-col gap-4 rounded-xl border border-white/70 bg-white/40 p-4 transition-colors hover:bg-white/60 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2">
                                                         <Link
                                                             href={route('events.vendor-needs.show', [event.id, need.id])}
-                                                            className="font-medium underline-offset-4 hover:underline"
+                                                            className="font-semibold underline-offset-4 hover:underline"
                                                         >
                                                             {need.category}
                                                         </Link>
                                                         {need.is_vital && <VitalBadge />}
                                                     </div>
                                                     {need.specification && (
-                                                        <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{need.specification}</p>
+                                                        <p className="text-muted-foreground mt-1 line-clamp-2 text-xs leading-relaxed">
+                                                            {need.specification}
+                                                        </p>
                                                     )}
-                                                </td>
-                                                <td className="px-2 py-3 text-right align-top whitespace-nowrap tabular-nums">
-                                                    <div>{formatRupiah(need.allocated_budget)}</div>
-                                                    <div className="text-muted-foreground text-xs">
+                                                </div>
+                                                <div className="shrink-0 text-right">
+                                                    <p className="font-semibold tabular-nums">{formatRupiah(need.allocated_budget)}</p>
+                                                    <p className="text-muted-foreground text-xs tabular-nums">
                                                         {formatPercentage(need.allocated_budget, event.total_budget)}
-                                                    </div>
-                                                </td>
-                                                <td className="px-2 py-3 align-top">
-                                                    <ProcurementStatusSelect
-                                                        eventId={event.id}
-                                                        vendorNeedId={need.id}
-                                                        value={need.procurement_status}
-                                                        options={procurementStatuses}
-                                                    />
-                                                </td>
-                                                <td className="px-2 py-3 text-right align-top tabular-nums">{need.quotes_count ?? 0}</td>
-                                                <td className="px-6 py-3 text-right align-top tabular-nums">
-                                                    {need.quotes_max_match_score != null ? `${need.quotes_max_match_score}/100` : '-'}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="h-1.5 overflow-hidden rounded-full bg-black/5 dark:bg-white/10" aria-hidden>
+                                                <div className="bg-primary h-full rounded-full" style={{ width: `${share}%` }} />
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                                <ProcurementStatusSelect
+                                                    eventId={event.id}
+                                                    vendorNeedId={need.id}
+                                                    value={need.procurement_status}
+                                                    options={procurementStatuses}
+                                                />
+                                                <div className="text-muted-foreground flex items-center gap-4 text-xs">
+                                                    <span>
+                                                        <span className="text-foreground font-medium tabular-nums">{need.quotes_count ?? 0}</span>{' '}
+                                                        quotes
+                                                    </span>
+                                                    <span>
+                                                        Best{' '}
+                                                        <span className="text-foreground font-medium tabular-nums">
+                                                            {need.quotes_max_match_score != null ? `${need.quotes_max_match_score}/100` : '-'}
+                                                        </span>
+                                                    </span>
+                                                    <Link
+                                                        href={route('events.vendor-needs.show', [event.id, need.id])}
+                                                        className="hover:text-foreground"
+                                                        aria-label={`Open ${need.category}`}
+                                                    >
+                                                        <ChevronRight className="size-4" />
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
                         )}
                     </CardContent>
                 </Card>
