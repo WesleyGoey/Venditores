@@ -1,13 +1,13 @@
 import ProcurementStatusSelect from '@/components/procurement-status-select';
 import ProcurementStepper from '@/components/procurement-stepper';
 import QuoteFormDialog from '@/components/quote-form-dialog';
-import VendorPicker from '@/components/vendor-picker';
 import { QuoteStatusBadge, VitalBadge } from '@/components/status-badges';
 import StatusGuide from '@/components/status-guide';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import VendorNeedFormDialog from '@/components/vendor-need-form-dialog';
+import VendorPicker from '@/components/vendor-picker';
 import VendorSearchDialog from '@/components/vendor-search-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatPercentage, formatRupiah } from '@/lib/format';
@@ -34,6 +34,7 @@ interface ShowVendorNeedProps {
     procurementStatuses: Option<ProcurementStatus>[];
     quoteStatuses: Option<QuoteStatus>[];
     recommendedVendors: RecommendedVendor[];
+    relatedCategories: string[];
     usedVendors: UsedVendor[];
 }
 
@@ -49,7 +50,15 @@ function scoreColor(score: number): string {
     return 'text-destructive';
 }
 
-export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses, quoteStatuses, recommendedVendors, usedVendors }: ShowVendorNeedProps) {
+export default function ShowVendorNeed({
+    event,
+    vendorNeed,
+    procurementStatuses,
+    quoteStatuses,
+    recommendedVendors,
+    relatedCategories,
+    usedVendors,
+}: ShowVendorNeedProps) {
     const [matching, setMatching] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -162,6 +171,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     eventId={event.id}
                     vendorNeedId={vendorNeed.id}
                     needCategory={vendorNeed.category}
+                    relatedCategories={relatedCategories}
                     recommended={recommendedVendors}
                     used={usedVendors}
                 />

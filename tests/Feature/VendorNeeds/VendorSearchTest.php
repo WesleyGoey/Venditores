@@ -2,6 +2,7 @@
 
 use App\Enums\ProcurementStatus;
 use App\Models\Event;
+use App\Models\User;
 use App\Models\VendorNeed;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -71,7 +72,7 @@ test('other users cannot search for vendors', function () {
     Http::preventStrayRequests();
     $need = VendorNeed::factory()->create();
 
-    $this->actingAs(App\Models\User::factory()->create())
+    $this->actingAs(User::factory()->create())
         ->postJson(route('events.vendor-needs.search.store', [$need->event, $need]))
         ->assertNotFound();
 });

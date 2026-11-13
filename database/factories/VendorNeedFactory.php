@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Database\Factories;
-
 
 use App\Enums\ProcurementStatus;
 use App\Models\Event;
 use App\Models\VendorNeed;
 use Illuminate\Database\Eloquent\Factories\Factory;
-
 
 /**
  * @extends Factory<VendorNeed>
@@ -31,7 +28,6 @@ class VendorNeedFactory extends Factory
             'procurement_status' => ProcurementStatus::Drafting,
         ];
     }
-
 
     /**
      * Indicate that the need is vital for the event.

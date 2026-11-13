@@ -1,14 +1,11 @@
 <?php
 
-
 namespace App\Http\Controllers;
-
 
 use App\Models\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
 
 class EventProposalController extends Controller
 {
@@ -19,9 +16,7 @@ class EventProposalController extends Controller
     {
         Gate::authorize('view', $event);
 
-
         abort_unless($event->hasProposal(), 404);
-
 
         return Storage::disk(config('filesystems.proposal_disk'))->response(
             $event->proposal_path,

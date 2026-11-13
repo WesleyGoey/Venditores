@@ -44,12 +44,16 @@ function matches(query: string, ...fields: (string | null)[]): boolean {
 }
 
 export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps) {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, vendorCategories } = usePage<SharedData>().props;
     const isAdmin = auth.user.is_admin;
     const [tab, setTab] = useState<'recommended' | 'users'>('recommended');
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
-    const categories = useMemo(() => ['All', ...Array.from(new Set(vendors.map((vendor) => vendor.category)))], [vendors]);
+    const categories = useMemo(() => {
+        const used = new Set(vendors.map((vendor) => vendor.category));
+
+        return ['All', ...vendorCategories.filter((name) => used.has(name))];
+    }, [vendors, vendorCategories]);
 
     const shownVendors = useMemo(
         () => vendors.filter((v) => (category === 'All' || v.category === category) && matches(query, v.name, v.category, v.description)),

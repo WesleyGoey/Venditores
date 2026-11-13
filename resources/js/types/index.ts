@@ -23,6 +23,8 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
+    /** The event vendor categories, same list the server validates against. */
+    vendorCategories: string[];
     quote: { message: string; author: string };
     auth: Auth;
     flash: FlashMessages;

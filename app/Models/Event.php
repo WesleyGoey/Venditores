@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Models;
-
 
 use App\Enums\EventStatus;
 use Database\Factories\EventFactory;
@@ -12,12 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
-
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
     use HasFactory;
-
 
     /**
      * The attributes that are mass assignable.
@@ -39,7 +35,6 @@ class Event extends Model
         'analyzed_at',
     ];
 
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -48,7 +43,6 @@ class Event extends Model
     protected $hidden = [
         'proposal_path',
     ];
-
 
     /**
      * Get the attributes that should be cast.
@@ -66,7 +60,6 @@ class Event extends Model
         ];
     }
 
-
     /**
      * @return BelongsTo<User, $this>
      */
@@ -74,7 +67,6 @@ class Event extends Model
     {
         return $this->belongsTo(User::class);
     }
-
 
     /**
      * @return HasMany<VendorNeed, $this>
@@ -84,7 +76,6 @@ class Event extends Model
         return $this->hasMany(VendorNeed::class);
     }
 
-
     /**
      * @return HasManyThrough<Quote, VendorNeed, $this>
      */
@@ -92,7 +83,6 @@ class Event extends Model
     {
         return $this->hasManyThrough(Quote::class, VendorNeed::class);
     }
-
 
     public function hasProposal(): bool
     {

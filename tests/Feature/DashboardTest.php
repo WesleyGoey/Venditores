@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Enums\EventStatus;
 use App\Enums\ProcurementStatus;
 use App\Models\Event;
@@ -9,19 +8,15 @@ use App\Models\User;
 use App\Models\VendorNeed;
 use Inertia\Testing\AssertableInertia as Assert;
 
-
 test('guests are redirected to the login page', function () {
     $this->get('/dashboard')->assertRedirect('/login');
 });
 
-
 test('authenticated users can visit the dashboard', function () {
     $this->actingAs($user = User::factory()->create());
 
-
     $this->get('/dashboard')->assertOk();
 });
-
 
 test('stats and status counts only include the user\'s own data', function () {
     $user = User::factory()->create();
@@ -29,7 +24,6 @@ test('stats and status counts only include the user\'s own data', function () {
     Event::factory()->for($user)->create(['total_budget' => 10_000_000]);
     Quote::factory()->for(VendorNeed::factory()->for($event)->create(['procurement_status' => ProcurementStatus::Quoted]))->create();
     Quote::factory()->create();
-
 
     $this->actingAs($user)
         ->get(route('dashboard'))
@@ -40,7 +34,6 @@ test('stats and status counts only include the user\'s own data', function () {
             ->where('eventStatusCounts.1', ['value' => 'analyzed', 'label' => 'Analyzed', 'count' => 1])
             ->where('procurementStatusCounts.2', ['value' => 'quoted', 'label' => 'Comparing offers', 'count' => 1]));
 });
-
 
 test('critical needs are those without quotes or with only rejected quotes', function () {
     $user = User::factory()->create();
@@ -53,14 +46,12 @@ test('critical needs are those without quotes or with only rejected quotes', fun
     Quote::factory()->for($covered)->create();
     VendorNeed::factory()->for(Event::factory()->for($user)->create(['status' => EventStatus::Completed]))->create();
 
-
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertInertia(fn (Assert $page) => $page
             ->has('criticalNeeds', 2)
             ->where('criticalNeeds', fn ($needs) => collect($needs)->pluck('id')->sort()->values()->all() === [$withoutQuotes->id, $allRejected->id]));
 });
-
 
 test('the warning list shows analyzed events within 60 days, soonest first', function () {
     $this->freezeTime();
@@ -71,7 +62,6 @@ test('the warning list shows analyzed events within 60 days, soonest first', fun
     VendorNeed::factory()->for($urgent)->vital()->create(['category' => 'Catering', 'procurement_status' => ProcurementStatus::Paid]);
     Event::factory()->for($user)->analyzed()->inDays(90)->create();
     Event::factory()->for($user)->inDays(5)->create();
-
 
     $this->actingAs($user)
         ->get(route('dashboard'))

@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Database\Factories;
-
 
 use App\Enums\EventStatus;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-
 
 /**
  * @extends Factory<Event>
@@ -33,7 +30,6 @@ class EventFactory extends Factory
         ];
     }
 
-
     /**
      * Indicate that the event's proposal has been analyzed.
      */
@@ -48,7 +44,6 @@ class EventFactory extends Factory
         ]);
     }
 
-
     /**
      * Indicate that the event has an uploaded proposal.
      */
@@ -59,7 +54,6 @@ class EventFactory extends Factory
             'proposal_original_name' => 'proposal.pdf',
         ]);
     }
-
 
     /**
      * Indicate that the event takes place a given number of days from today.

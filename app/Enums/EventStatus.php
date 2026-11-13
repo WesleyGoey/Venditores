@@ -1,15 +1,12 @@
 <?php
 
-
 namespace App\Enums;
-
 
 enum EventStatus: string
 {
     case Draft = 'draft';
     case Analyzed = 'analyzed';
     case Completed = 'completed';
-
 
     public function label(): string
     {

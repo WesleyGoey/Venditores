@@ -6,10 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatRupiah } from '@/lib/format';
-import { type VendorNeed } from '@/types';
-import { useForm } from '@inertiajs/react';
+import { type SharedData, type VendorNeed } from '@/types';
+import { useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, ReactNode, useState } from 'react';
-
 
 type VendorNeedFormData = {
     category: string;
@@ -18,18 +17,16 @@ type VendorNeedFormData = {
     is_vital: boolean;
 };
 
-
 interface VendorNeedFormDialogProps {
     eventId: number;
     vendorNeed?: VendorNeed;
     trigger: ReactNode;
 }
 
-
 export default function VendorNeedFormDialog({ eventId, vendorNeed, trigger }: VendorNeedFormDialogProps) {
+    const { vendorCategories } = usePage<SharedData>().props;
     const [open, setOpen] = useState(false);
     const isEditing = vendorNeed !== undefined;
-
 
     const { data, setData, post, patch, processing, errors, reset, clearErrors } = useForm<VendorNeedFormData>({
         category: vendorNeed?.category ?? '',
@@ -38,16 +35,13 @@ export default function VendorNeedFormDialog({ eventId, vendorNeed, trigger }: V
         is_vital: vendorNeed?.is_vital ?? false,
     });
 
-
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
 
         const options = {
             preserveScroll: true,
             onSuccess: () => {
                 setOpen(false);
-
 
                 if (!isEditing) {
                     reset();
@@ -55,14 +49,12 @@ export default function VendorNeedFormDialog({ eventId, vendorNeed, trigger }: V
             },
         };
 
-
         if (isEditing) {
             patch(route('events.vendor-needs.update', [eventId, vendorNeed.id]), options);
         } else {
             post(route('events.vendor-needs.store', eventId), options);
         }
     };
-
 
     return (
         <Dialog
@@ -83,11 +75,17 @@ export default function VendorNeedFormDialog({ eventId, vendorNeed, trigger }: V
                         <Label htmlFor="category">Category</Label>
                         <Input
                             id="category"
+                            list="vendor-categories"
                             value={data.category}
                             onChange={(e) => setData('category', e.target.value)}
                             required
                             placeholder="e.g. Catering"
                         />
+                        <datalist id="vendor-categories">
+                            {vendorCategories.map((category) => (
+                                <option key={category} value={category} />
+                            ))}
+                        </datalist>
                         <InputError message={errors.category} />
                     </div>
                     <div className="grid gap-2">

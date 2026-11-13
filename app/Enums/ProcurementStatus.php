@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Enums;
-
 
 enum ProcurementStatus: string
 {
@@ -11,7 +9,6 @@ enum ProcurementStatus: string
     case Quoted = 'quoted';
     case Deal = 'deal';
     case Paid = 'paid';
-
 
     public function label(): string
     {
@@ -23,7 +20,6 @@ enum ProcurementStatus: string
             self::Paid => 'Paid',
         };
     }
-
 
     /**
      * What the status means, in one sentence.
@@ -38,7 +34,6 @@ enum ProcurementStatus: string
             self::Paid => 'Vendor paid. Done.',
         };
     }
-
 
     /**
      * Whether a vendor has been secured for the need.

@@ -1,13 +1,10 @@
 <?php
 
-
 namespace App\Policies;
-
 
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-
 
 class EventPolicy
 {
@@ -19,7 +16,6 @@ class EventPolicy
         return $this->owns($user, $event);
     }
 
-
     /**
      * Determine whether the user can update the event and its vendor needs and quotes.
      */
@@ -28,7 +24,6 @@ class EventPolicy
         return $this->owns($user, $event);
     }
 
-
     /**
      * Determine whether the user can delete the event.
      */
@@ -36,7 +31,6 @@ class EventPolicy
     {
         return $this->owns($user, $event);
     }
-
 
     /**
      * Other users' events are reported as missing so their existence is not revealed.

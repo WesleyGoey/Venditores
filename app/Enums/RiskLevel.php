@@ -1,15 +1,12 @@
 <?php
 
-
 namespace App\Enums;
-
 
 enum RiskLevel: string
 {
     case Urgent = 'urgent';
     case Warning = 'warning';
     case Low = 'low';
-
 
     public function label(): string
     {

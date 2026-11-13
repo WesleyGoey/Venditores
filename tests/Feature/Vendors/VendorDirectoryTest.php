@@ -81,6 +81,12 @@ describe('managing', function () use ($vendorData) {
         expect(RecommendedVendor::count())->toBe(1);
     });
 
+    test('the category must come from the list', function () use ($vendorData) {
+        $this->actingAs(User::factory()->admin()->create())
+            ->post(route('vendors.store'), $vendorData(['category' => 'Magic Unicorns']))
+            ->assertSessionHasErrors('category');
+    });
+
     test('name and category are required and the website must be a web address', function () use ($vendorData) {
         $this->actingAs(User::factory()->admin()->create())
             ->post(route('vendors.store'), $vendorData(['name' => '', 'category' => '', 'website' => 'javascript:alert(1)']))
@@ -131,7 +137,8 @@ describe('picking a vendor on a vendor need', function () {
                 ->has('recommendedVendors', 2)
                 ->where('recommendedVendors.0.name', 'Match')
                 ->where('recommendedVendors.0.matches_need', true)
-                ->where('recommendedVendors.1.matches_need', false));
+                ->where('recommendedVendors.1.matches_need', false)
+                ->where('relatedCategories', fn ($related) => collect($related)->contains('Beverages & Coffee') && ! collect($related)->contains('Catering')));
     });
 
     test('vendors the user chose before are offered again, once each and only their own', function () {
