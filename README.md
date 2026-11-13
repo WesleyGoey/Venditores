@@ -90,8 +90,9 @@ flowchart LR
 | 📅 | **Event** | Cukup pilih proposal PDF (maks. 10 MB). Kolom nama, tanggal, lokasi, anggaran, dan deskripsi langsung terisi dari isi proposal. Semua bisa diubah. |
 | 🤖 | **Analisis proposal** | Gemini membaca proposal lalu menulis ringkasan, skala acara, perkiraan peserta, dan kategori vendor beserta persentase anggaran. Persentase itu diubah menjadi Rupiah sehingga total alokasi selalu sama dengan anggaran event. |
 | 📋 | **Kebutuhan vendor** | Tambah, ubah, hapus, dan tandai sebagai vital. Panel anggaran menunjukkan total, yang sudah dialokasikan, dan sisanya. |
-| ⭐ | **Vendor rekomendasi** | Daftar vendor dari admin. Muncul otomatis di kebutuhan vendor dengan kategori yang sama dan bisa langsung dijadikan penawaran. |
-| 💭 | **Review vendor** | Setiap user bisa memberi rating 1–5 dan komentar untuk vendor rekomendasi. |
+| ⭐ | **Vendor rekomendasi** | Daftar vendor dari admin. Di halaman kebutuhan vendor, user memfilter per kategori lalu klik **Add as quote** untuk langsung memasukkannya ke penawaran. |
+| 🕘 | **History** | Menu History menampilkan semua event beserta vendor yang dipakai (per event atau per vendor). Vendor yang pernah dipakai juga muncul di tab **History** saat memilih vendor, dan bisa langsung dijadikan penawaran. |
+| 💭 | **Review vendor** | Setiap user bisa memberi rating 1–5 dan komentar untuk vendor rekomendasi. Satu user hanya satu review per vendor (bisa diubah). |
 | 🔎 | **Cari vendor online** | Tombol **"Find vendors online"** memakai Gemini dengan Google Search untuk mencari vendor sesuai kategori dan lokasi event, lengkap dengan harga perkiraan, kontak, website, dan sumbernya. Hasilnya bisa dijadikan penawaran lewat **"Add as quote"**. |
 | 💬 | **Penawaran** | Catat manual, dari vendor rekomendasi, atau dari hasil pencarian online. Pilih dengan tombol **Choose**, atau tolak. |
 | 🎯 | **AI matching** | Gemini menilai isi penawaran terhadap spesifikasi. Nama vendor tidak dikirim ke AI. Sistem menilai harga: makin murah makin tinggi. |
@@ -119,8 +120,8 @@ Status berubah otomatis saat panitia bekerja dengan penawaran, kecuali **Paid** 
 
 | Peran | Bisa apa |
 |---|---|
-| **User** | Melihat vendor rekomendasi, menjadikannya penawaran, memberi review |
-| **Admin** | Semua yang bisa user, plus tambah, ubah, hapus vendor rekomendasi, dan melihat vendor yang dimasukkan user di tab terpisah **"Added by users"** |
+| **User** | Event, anggaran, kebutuhan vendor, penawaran, dashboard, history, melihat vendor rekomendasi dan memberi review |
+| **Admin** | Hanya menu **Vendors**: tambah, ubah, hapus vendor rekomendasi, melihat review, dan melihat vendor yang dimasukkan user di tab **"Added by users"**. Admin tidak punya event, dashboard, atau penawaran, dan tidak bisa memberi review |
 
 ### AI matching
 

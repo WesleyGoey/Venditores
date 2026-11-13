@@ -10,7 +10,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { CalendarDays, LayoutGrid, Menu, Search, Store } from 'lucide-react';
+import { CalendarDays, History, LayoutGrid, Menu, Search, Store } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -30,6 +30,20 @@ const mainNavItems: NavItem[] = [
         url: '/vendors',
         icon: Store,
     },
+    {
+        title: 'History',
+        url: '/history',
+        icon: History,
+    },
+];
+
+/** Admins only manage vendors. */
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Vendors',
+        url: '/vendors',
+        icon: Store,
+    },
 ];
 
 const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
@@ -42,6 +56,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const navItems = auth.user.is_admin ? adminNavItems : mainNavItems;
     return (
         <>
             <div className="border-sidebar-border/80 border-b">
@@ -62,7 +77,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 <div className="mt-6 flex h-full flex-1 flex-col space-y-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
-                                            {mainNavItems.map((item) => (
+                                            {navItems.map((item) => (
                                                 <Link key={item.title} href={item.url} className="flex items-center space-x-2 font-medium">
                                                     {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                     <span>{item.title}</span>
@@ -75,7 +90,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/dashboard" prefetch className="flex items-center space-x-2">
+                    <Link href={auth.user.is_admin ? '/vendors' : '/dashboard'} prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
@@ -83,7 +98,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                {mainNavItems.map((item, index) => (
+                                {navItems.map((item, index) => (
                                     <NavigationMenuItem key={index} className="relative flex h-full items-center">
                                         <Link
                                             href={item.url}

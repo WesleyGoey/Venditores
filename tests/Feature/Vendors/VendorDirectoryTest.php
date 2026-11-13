@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\QuoteStatus;
+use App\Models\Event;
 use App\Models\Quote;
 use App\Models\RecommendedVendor;
 use App\Models\User;
@@ -117,8 +119,8 @@ describe('reviews', function () {
     });
 });
 
-describe('suggestions on a vendor need', function () {
-    test('a vendor need shows the recommended vendors of the same category only', function () {
+describe('picking a vendor on a vendor need', function () {
+    test('all recommended vendors are offered and the ones for the same category are flagged', function () {
         $need = VendorNeed::factory()->create(['category' => 'Catering & Snacks']);
         RecommendedVendor::factory()->create(['name' => 'Match', 'category' => 'catering']);
         RecommendedVendor::factory()->create(['name' => 'Other', 'category' => 'Venue']);
@@ -126,7 +128,69 @@ describe('suggestions on a vendor need', function () {
         $this->actingAs($need->event->user)
             ->get(route('events.vendor-needs.show', [$need->event, $need]))
             ->assertInertia(fn (Assert $page) => $page
-                ->has('recommendedVendors', 1)
-                ->where('recommendedVendors.0.name', 'Match'));
+                ->has('recommendedVendors', 2)
+                ->where('recommendedVendors.0.name', 'Match')
+                ->where('recommendedVendors.0.matches_need', true)
+                ->where('recommendedVendors.1.matches_need', false));
+    });
+
+    test('vendors the user chose before are offered again, once each and only their own', function () {
+        $user = User::factory()->create();
+        $event = Event::factory()->for($user)->create(['name' => 'Last Year Fest']);
+        $oldNeed = VendorNeed::factory()->for($event)->create(['category' => 'Catering']);
+        Quote::factory()->for($oldNeed)->create(['vendor_name' => 'Dapur A', 'status' => QuoteStatus::Accepted, 'price' => 5_000_000]);
+        Quote::factory()->for($oldNeed)->create(['vendor_name' => 'Dapur Declined', 'status' => QuoteStatus::Rejected]);
+        Quote::factory()->for($oldNeed)->create(['vendor_name' => 'Dapur Pending', 'status' => QuoteStatus::Pending]);
+        $otherNeed = VendorNeed::factory()->create(['category' => 'Catering']);
+        Quote::factory()->for($otherNeed)->create(['vendor_name' => "Someone Else's", 'status' => QuoteStatus::Accepted]);
+        $thisNeed = VendorNeed::factory()->for(Event::factory()->for($user)->create())->create(['category' => 'Catering']);
+
+        $this->actingAs($user)
+            ->get(route('events.vendor-needs.show', [$thisNeed->event, $thisNeed]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('usedVendors', 1)
+                ->where('usedVendors.0.name', 'Dapur A')
+                ->where('usedVendors.0.event', 'Last Year Fest')
+                ->where('usedVendors.0.price', 5_000_000));
+    });
+});
+
+describe('admin', function () {
+    test('an admin is sent to the vendors page instead of events, dashboard and history', function (string $route) {
+        $this->actingAs(User::factory()->admin()->create())->get(route($route))->assertRedirect(route('vendors.index'));
+    })->with(['dashboard', 'events.index', 'events.create', 'history']);
+
+    test('an admin cannot review vendors', function () {
+        $vendor = RecommendedVendor::factory()->create();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put(route('vendors.review.store', $vendor), ['rating' => 5])
+            ->assertForbidden();
+
+        expect($vendor->reviews()->count())->toBe(0);
+    });
+});
+
+describe('history', function () {
+    test('it lists the events of the user, newest first, with the vendors chosen for each', function () {
+        $user = User::factory()->create();
+        $event = Event::factory()->for($user)->create(['name' => 'Tech Fest', 'event_date' => '2027-06-01']);
+        $need = VendorNeed::factory()->for($event)->create(['category' => 'Venue']);
+        Quote::factory()->for($need)->create(['vendor_name' => 'Grand Hall', 'status' => QuoteStatus::Accepted]);
+        Quote::factory()->for($need)->create(['vendor_name' => 'Small Hall', 'status' => QuoteStatus::Rejected]);
+        Event::factory()->for($user)->create(['name' => 'Empty Event', 'event_date' => '2026-01-01']);
+        Event::factory()->create(['name' => 'Not Mine']);
+
+        $this->actingAs($user)
+            ->get(route('history'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('history/index')
+                ->has('events', 2)
+                ->where('events.0.name', 'Tech Fest')
+                ->has('events.0.vendors', 1)
+                ->where('events.0.vendors.0.name', 'Grand Hall')
+                ->where('events.0.vendors.0.category', 'Venue')
+                ->where('events.1.name', 'Empty Event')
+                ->has('events.1.vendors', 0));
     });
 });

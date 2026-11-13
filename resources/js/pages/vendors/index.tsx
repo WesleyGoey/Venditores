@@ -48,8 +48,13 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
     const isAdmin = auth.user.is_admin;
     const [tab, setTab] = useState<'recommended' | 'users'>('recommended');
     const [query, setQuery] = useState('');
+    const [category, setCategory] = useState('All');
+    const categories = useMemo(() => ['All', ...Array.from(new Set(vendors.map((vendor) => vendor.category)))], [vendors]);
 
-    const shownVendors = useMemo(() => vendors.filter((v) => matches(query, v.name, v.category, v.description)), [vendors, query]);
+    const shownVendors = useMemo(
+        () => vendors.filter((v) => (category === 'All' || v.category === category) && matches(query, v.name, v.category, v.description)),
+        [vendors, query, category],
+    );
     const shownUserVendors = useMemo(
         () => (userVendors ?? []).filter((v) => matches(query, v.name, v.category, v.event, v.user)),
         [userVendors, query],
@@ -66,7 +71,14 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
             <Head title="Vendors" />
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                    <Heading title="Vendors" description="Recommended by the admin. Rate the ones you worked with." />
+                    <Heading
+                        title="Vendors"
+                        description={
+                            isAdmin
+                                ? 'Manage recommended vendors and see what users added.'
+                                : 'Recommended by the admin. Rate the ones you worked with.'
+                        }
+                    />
                     {isAdmin && (
                         <VendorFormDialog
                             trigger={
@@ -109,6 +121,25 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name or category" className="pl-8" />
                     </div>
                 </div>
+
+                {tab === 'recommended' && categories.length > 2 && (
+                    <div className="flex flex-wrap gap-1.5" aria-label="Filter by category">
+                        {categories.map((name) => (
+                            <button
+                                key={name}
+                                type="button"
+                                onClick={() => setCategory(name)}
+                                aria-pressed={category === name}
+                                className={cn(
+                                    'rounded-full border px-3 py-1 text-xs font-medium',
+                                    category === name ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-muted',
+                                )}
+                            >
+                                {name}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {tab === 'recommended' ? (
                     shownVendors.length === 0 ? (

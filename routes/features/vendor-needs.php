@@ -8,7 +8,7 @@ use App\Http\Controllers\VendorSearchController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::middleware(['auth', 'verified'])->scopeBindings()->group(function () {
+Route::middleware(['auth', 'verified', 'not-admin'])->scopeBindings()->group(function () {
     Route::resource('events.vendor-needs', VendorNeedController::class)
         ->only(['show', 'store', 'update', 'destroy']);
 

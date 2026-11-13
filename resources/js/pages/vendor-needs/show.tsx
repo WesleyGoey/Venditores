@@ -1,7 +1,7 @@
 import ProcurementStatusSelect from '@/components/procurement-status-select';
 import ProcurementStepper from '@/components/procurement-stepper';
 import QuoteFormDialog from '@/components/quote-form-dialog';
-import RecommendedVendorList from '@/components/recommended-vendor-list';
+import VendorPicker from '@/components/vendor-picker';
 import { QuoteStatusBadge, VitalBadge } from '@/components/status-badges';
 import StatusGuide from '@/components/status-guide';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import {
     type Quote,
     type QuoteStatus,
     type RecommendedVendor,
+    type UsedVendor,
     type VendorNeed,
 } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -33,6 +34,7 @@ interface ShowVendorNeedProps {
     procurementStatuses: Option<ProcurementStatus>[];
     quoteStatuses: Option<QuoteStatus>[];
     recommendedVendors: RecommendedVendor[];
+    usedVendors: UsedVendor[];
 }
 
 function scoreColor(score: number): string {
@@ -47,7 +49,7 @@ function scoreColor(score: number): string {
     return 'text-destructive';
 }
 
-export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses, quoteStatuses, recommendedVendors }: ShowVendorNeedProps) {
+export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses, quoteStatuses, recommendedVendors, usedVendors }: ShowVendorNeedProps) {
     const [matching, setMatching] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -156,7 +158,13 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     </Card>
                 </div>
 
-                <RecommendedVendorList eventId={event.id} vendorNeedId={vendorNeed.id} vendors={recommendedVendors} />
+                <VendorPicker
+                    eventId={event.id}
+                    vendorNeedId={vendorNeed.id}
+                    needCategory={vendorNeed.category}
+                    recommended={recommendedVendors}
+                    used={usedVendors}
+                />
 
                 <Card>
                     <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 space-y-0">

@@ -38,6 +38,17 @@ class RecommendedVendor extends Model
     }
 
     /**
+     * Whether this vendor's category fits a vendor need category, ignoring case.
+     */
+    public function matchesCategory(string $category): bool
+    {
+        $mine = mb_strtolower(trim($this->category));
+        $other = mb_strtolower(trim($category));
+
+        return $mine !== '' && $other !== '' && (str_contains($other, $mine) || str_contains($mine, $other));
+    }
+
+    /**
      * Vendors whose category matches a vendor need category, ignoring case.
      * "Catering" matches "Catering & Snacks" and the other way around.
      */
