@@ -34,7 +34,7 @@ class QuoteMatcher
         $result = $this->gemini->generateJson(
             parts: [['text' => $this->prompt($vendorNeed, $quotes->all())]],
             responseSchema: $this->schema(),
-            systemInstruction: 'You are an impartial procurement reviewer. You judge how well vendor quotes meet a technical specification. Ignore price; price is scored separately. Write reasons in the same language as the specification.',
+            systemInstruction: 'You are an impartial procurement reviewer. You judge how well vendor quotes meet a technical specification. Judge only the offer details. Ignore price (it is scored separately) and ignore who the vendor is; vendor names are never sent. Write reasons in the same language as the specification.',
         );
 
         $scores = collect($result['results'] ?? [])
@@ -73,9 +73,8 @@ class QuoteMatcher
     {
         $quoteLines = collect($quotes)
             ->map(fn (Quote $quote): string => sprintf(
-                "- quote_id: %d\n  vendor: %s\n  offer details: %s",
+                "- quote_id: %d\n  offer details: %s",
                 $quote->id,
-                $quote->vendor_name,
                 $quote->notes ?: '(no details provided)',
             ))
             ->implode("\n");

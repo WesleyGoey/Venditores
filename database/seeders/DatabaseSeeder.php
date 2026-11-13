@@ -1,16 +1,14 @@
 <?php
 
-
 namespace Database\Seeders;
-
 
 use App\Enums\EventStatus;
 use App\Enums\ProcurementStatus;
 use App\Enums\QuoteStatus;
+use App\Models\RecommendedVendor;
 use App\Models\User;
 use App\Services\BudgetAllocator;
 use Illuminate\Database\Seeder;
-
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,11 +17,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(BudgetAllocator $allocator): void
     {
+        User::factory()->admin()->create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+        ]);
+
+        RecommendedVendor::insert([
+            ['name' => 'Dapur Nusantara', 'category' => 'Catering', 'description' => 'Lunch boxes and buffet for 100 to 2,000 guests. Halal certified.', 'contact' => '0812-0000-0001', 'website' => null, 'price_estimate' => 45_000_000],
+            ['name' => 'Grand City Convention Hall', 'category' => 'Venue', 'description' => 'Main hall for 1,000 people and 5 meeting rooms.', 'contact' => '031-000-0002', 'website' => 'https://example.com', 'price_estimate' => 40_000_000],
+            ['name' => 'Sonic Pro Audio', 'category' => 'Sound System & Lighting', 'description' => 'Line array, wireless mics, stage lighting and crew.', 'contact' => '0812-0000-0003', 'website' => null, 'price_estimate' => 35_000_000],
+        ]);
+
         $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
-
 
         $event = $user->events()->create([
             'name' => 'Ciputra Tech Fest 2027',
@@ -38,7 +46,6 @@ class DatabaseSeeder extends Seeder
             'analyzed_at' => now(),
         ]);
 
-
         $needs = [
             ['category' => 'Venue', 'specification' => 'Main hall for 800 people plus 3 workshop rooms, 2 days, including AC and cleaning.', 'percentage' => 30, 'is_vital' => true, 'status' => ProcurementStatus::Deal],
             ['category' => 'Catering', 'specification' => '800 lunch boxes and 2 coffee breaks per day for 2 days.', 'percentage' => 28, 'is_vital' => true, 'status' => ProcurementStatus::Quoted],
@@ -48,9 +55,7 @@ class DatabaseSeeder extends Seeder
             ['category' => 'Printing & Merchandise', 'specification' => 'ID cards, banners and 300 tote bags.', 'percentage' => 5, 'is_vital' => false, 'status' => ProcurementStatus::Drafting],
         ];
 
-
         $allocations = $allocator->allocate($event->total_budget, array_column($needs, 'percentage'));
-
 
         foreach ($needs as $index => $need) {
             $vendorNeed = $event->vendorNeeds()->create([
@@ -62,7 +67,6 @@ class DatabaseSeeder extends Seeder
                 'procurement_status' => $need['status'],
             ]);
 
-
             if ($need['category'] === 'Venue') {
                 $vendorNeed->quotes()->create([
                     'vendor_name' => 'Grand City Convention Hall',
@@ -71,7 +75,6 @@ class DatabaseSeeder extends Seeder
                     'status' => QuoteStatus::Accepted,
                 ]);
             }
-
 
             if ($need['category'] === 'Catering') {
                 $vendorNeed->quotes()->createMany([

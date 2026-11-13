@@ -1,22 +1,18 @@
 import { LucideIcon } from 'lucide-react';
 
-
 export interface Auth {
     user: User;
 }
-
 
 export interface BreadcrumbItem {
     title: string;
     href: string;
 }
 
-
 export interface NavGroup {
     title: string;
     items: NavItem[];
 }
-
 
 export interface NavItem {
     title: string;
@@ -24,7 +20,6 @@ export interface NavItem {
     icon?: LucideIcon | null;
     isActive?: boolean;
 }
-
 
 export interface SharedData {
     name: string;
@@ -34,36 +29,32 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
-
 export interface User {
     id: number;
     name: string;
     email: string;
     avatar?: string;
+    is_admin: boolean;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
 
-
 export interface FlashMessages {
     success?: string | null;
     error?: string | null;
 }
-
 
 export type EventStatus = 'draft' | 'analyzed' | 'completed';
 export type ProcurementStatus = 'drafting' | 'searching' | 'quoted' | 'deal' | 'paid';
 export type QuoteStatus = 'pending' | 'accepted' | 'rejected';
 export type RiskLevel = 'urgent' | 'warning' | 'low';
 
-
 export interface Option<T extends string = string> {
     value: T;
     label: string;
 }
-
 
 export interface VenditoresEvent {
     id: number;
@@ -82,7 +73,6 @@ export interface VenditoresEvent {
     vendor_needs: VendorNeed[];
 }
 
-
 export interface VendorNeed {
     id: number;
     event_id: number;
@@ -96,7 +86,6 @@ export interface VendorNeed {
     quotes_max_match_score?: number | null;
     quotes?: Quote[];
 }
-
 
 export interface Quote {
     id: number;
@@ -113,10 +102,29 @@ export interface Quote {
     matched_at: string | null;
 }
 
-
 export interface RiskAssessment {
     level: RiskLevel;
     days_remaining: number;
     unsecured_needs: number;
     unsecured_vital_needs: string[];
+}
+
+export interface RecommendedVendor {
+    id: number;
+    name: string;
+    category: string;
+    description: string | null;
+    contact: string | null;
+    website: string | null;
+    price_estimate: number | null;
+    rating: number | null;
+    reviews_count: number;
+}
+
+export interface VendorReview {
+    id: number;
+    user: string;
+    rating: number;
+    comment: string | null;
+    created_at: string;
 }

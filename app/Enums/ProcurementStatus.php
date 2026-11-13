@@ -31,11 +31,11 @@ enum ProcurementStatus: string
     public function description(): string
     {
         return match ($this) {
-            self::Drafting => 'The need is defined, but no vendor has been looked for yet.',
-            self::Searching => 'You are looking for vendors. No offer has been recorded yet.',
-            self::Quoted => 'At least one offer is recorded. Compare them and accept the best one.',
-            self::Deal => 'An offer was accepted. The vendor is secured, payment is still pending.',
-            self::Paid => 'The vendor has been paid. This need is done.',
+            self::Drafting => 'No vendor searched yet.',
+            self::Searching => 'Looking for vendors. No offer yet.',
+            self::Quoted => 'Offers received. Pick the best one.',
+            self::Deal => 'Vendor picked. Payment pending.',
+            self::Paid => 'Vendor paid. Done.',
         };
     }
 

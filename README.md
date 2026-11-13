@@ -22,11 +22,11 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 
 ## 👥 Tim
 
-| Nama | NIM | Branch |
-|---|---|---|
-| Wesley Goeinawan | 0706012410011 | `wes` |
-| Angga Dhammika Jaya | 0706012410017 | `ang` |
-| Keane Juan Suryanto | 0706012410004 | `kin` |
+| Nama | NIM | Branch | Tugas |
+|---|---|---|---|
+| Wesley Goeinawan | 0706012410011 | `wes` | Struktur data, CRUD event, halaman event |
+| Angga Dhammika Jaya | 0706012410017 | `ang` | Fondasi dan konfigurasi, navigasi, kebutuhan vendor dan penawaran, dashboard, deploy |
+| Keane Juan Suryanto | 0706012410004 | `kin` | Integrasi Gemini, analisis proposal, AI matching, pencarian vendor online |
 
 ---
 
@@ -40,6 +40,7 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
       <ul>
         <li><a href="#status-pengadaan">Status pengadaan</a></li>
         <li><a href="#status-penawaran">Status penawaran</a></li>
+        <li><a href="#vendor-rekomendasi-dan-review">Vendor rekomendasi dan review</a></li>
         <li><a href="#ai-matching">AI matching</a></li>
         <li><a href="#risiko">Risiko</a></li>
         <li><a href="#batas-pemakaian-ai">Batas pemakaian AI</a></li>
@@ -74,7 +75,7 @@ Panitia mengunggah **proposal PDF**, lalu **Google Gemini** menyusun daftar kebu
 flowchart LR
     A[📄 Upload proposal PDF] --> B[🤖 Gemini analisis proposal]
     B --> C[📋 Kebutuhan vendor + anggaran Rupiah]
-    C --> D[🔎 Cari vendor online]
+    C --> D[🔎 Vendor rekomendasi / cari online]
     D --> E[💬 Catat & bandingkan penawaran]
     E --> F[✅ Pilih vendor]
     F --> G[📊 Pantau dashboard & risiko]
@@ -86,12 +87,14 @@ flowchart LR
 | | Fitur | Penjelasan |
 |:---:|---|---|
 | 🔐 | **Akun** | Daftar, login, reset password, dan verifikasi email. |
-| 📅 | **Event** | Buat, ubah, dan hapus event beserta proposal PDF (maks. 10 MB, disimpan privat). |
+| 📅 | **Event** | Cukup upload proposal PDF (maks. 10 MB). AI mengisi nama, tanggal, lokasi, anggaran, dan deskripsi. Semua bisa diubah setelahnya. |
 | 🤖 | **Analisis proposal** | Gemini membaca proposal lalu menulis ringkasan, skala acara, perkiraan peserta, dan kategori vendor beserta persentase anggaran. Persentase itu diubah menjadi Rupiah sehingga total alokasi selalu sama dengan anggaran event. |
-| 📋 | **Kebutuhan vendor** | Tambah, ubah, hapus, dan tandai sebagai vital. |
+| 📋 | **Kebutuhan vendor** | Tambah, ubah, hapus, dan tandai sebagai vital. Panel anggaran menunjukkan total, yang sudah dialokasikan, dan sisanya. |
+| ⭐ | **Vendor rekomendasi** | Daftar vendor dari admin. Muncul otomatis di kebutuhan vendor dengan kategori yang sama dan bisa langsung dijadikan penawaran. |
+| 💭 | **Review vendor** | Setiap user bisa memberi rating 1–5 dan komentar untuk vendor rekomendasi. |
 | 🔎 | **Cari vendor online** | Tombol **"Find vendors online"** memakai Gemini dengan Google Search untuk mencari vendor sesuai kategori dan lokasi event, lengkap dengan harga perkiraan, kontak, website, dan sumbernya. Hasilnya bisa dijadikan penawaran lewat **"Add as quote"**. |
-| 💬 | **Penawaran** | Catat manual atau dari hasil pencarian online, pilih dengan tombol **Choose**, atau tolak. |
-| 🎯 | **AI matching** | Gemini menilai kecocokan penawaran dengan spesifikasi, sistem menilai kecocokan harga dengan anggaran. |
+| 💬 | **Penawaran** | Catat manual, dari vendor rekomendasi, atau dari hasil pencarian online. Pilih dengan tombol **Choose**, atau tolak. |
+| 🎯 | **AI matching** | Gemini menilai isi penawaran terhadap spesifikasi. Nama vendor tidak dikirim ke AI. Sistem menilai harga: makin murah makin tinggi. |
 | ⏰ | **Risiko** | Dihitung dari sisa hari menuju acara, tanpa AI. |
 | 📊 | **Dashboard** | Jumlah event, kebutuhan vendor, penawaran, total anggaran, status pipeline, kebutuhan kritis, dan peringatan risiko. |
 
@@ -102,21 +105,38 @@ flowchart LR
     A[Not started] --> B[Finding vendors] --> C[Comparing offers] --> D[Vendor chosen] --> E[Paid]
 ```
 
-Status berubah otomatis saat panitia bekerja dengan penawaran, kecuali **Paid** yang diatur manual. Tombol **"What do the statuses mean?"** menjelaskan arti tiap status.
+Status berubah otomatis saat panitia bekerja dengan penawaran, kecuali **Paid** yang diatur manual. Tombol **"Status help"** menjelaskan arti tiap status.
 
 ### Status penawaran
 
 | Status | Arti |
 |---|---|
-| 🟡 **Under review** | Penawaran sedang dipertimbangkan |
-| 🟢 **Chosen** | Vendor dipilih |
-| 🔴 **Declined** | Penawaran ditolak |
+| **Under review** | Belum diputuskan |
+| **Chosen** | Vendor dipilih |
+| **Declined** | Penawaran ditolak |
+
+### Vendor rekomendasi dan review
+
+| Peran | Bisa apa |
+|---|---|
+| **User** | Melihat vendor rekomendasi, menjadikannya penawaran, memberi review |
+| **Admin** | Semua yang bisa user, plus tambah, ubah, hapus vendor rekomendasi, dan melihat vendor yang dimasukkan user di tab terpisah **"Added by users"** |
 
 ### AI matching
 
 ```
-skor akhir = 60% kecocokan spesifikasi (Gemini) + 40% kecocokan anggaran (sistem)
+skor akhir = 60% skor spesifikasi (Gemini) + 40% skor harga (sistem)
 ```
+
+Skor spesifikasi hanya dari isi penawaran ("Offer details"). Nama vendor tidak dinilai.
+
+| Harga dibanding anggaran | Skor harga |
+|---|---|
+| Gratis | 100 |
+| 50% dari anggaran | 85 |
+| Pas anggaran | 70 |
+| Lebih 10% | 50 |
+| Lebih 35% atau lebih | 0 |
 
 ### Risiko
 
@@ -183,6 +203,13 @@ Tersedia setelah `php artisan db:seed`. Seeder ini hanya untuk lokal.
 | Email | Password |
 |---|---|
 | `test@example.com` | `password` |
+| `admin@example.com` (admin) | `password` |
+
+Untuk menjadikan akun lain admin, misalnya di server:
+
+```bash
+php artisan user:make-admin email@contoh.com
+```
 
 ### Setelah `git pull`
 

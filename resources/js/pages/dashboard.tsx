@@ -68,34 +68,10 @@ function StatusBreakdown<T extends string>({ items, solid }: { items: StatusCoun
 
 export default function Dashboard({ stats, eventStatusCounts, procurementStatusCounts, criticalNeeds, warnings }: DashboardProps) {
     const statCards = [
-        {
-            label: 'Events',
-            value: stats.events.toLocaleString('id-ID'),
-            icon: CalendarDays,
-            tone: 'from-indigo-500 to-violet-500',
-            card: 'border-t-indigo-500',
-        },
-        {
-            label: 'Vendor needs',
-            value: stats.vendor_needs.toLocaleString('id-ID'),
-            icon: ClipboardList,
-            tone: 'from-sky-500 to-cyan-500',
-            card: 'border-t-sky-500',
-        },
-        {
-            label: 'Quotes received',
-            value: stats.quotes.toLocaleString('id-ID'),
-            icon: FileText,
-            tone: 'from-amber-500 to-orange-500',
-            card: 'border-t-amber-500',
-        },
-        {
-            label: 'Total budget',
-            value: formatRupiah(stats.total_budget),
-            icon: Wallet,
-            tone: 'from-emerald-500 to-teal-500',
-            card: 'border-t-emerald-500',
-        },
+        { label: 'Events', value: stats.events.toLocaleString('id-ID'), icon: CalendarDays },
+        { label: 'Vendor needs', value: stats.vendor_needs.toLocaleString('id-ID'), icon: ClipboardList },
+        { label: 'Quotes', value: stats.quotes.toLocaleString('id-ID'), icon: FileText },
+        { label: 'Total budget', value: formatRupiah(stats.total_budget), icon: Wallet },
     ];
 
     return (
@@ -104,8 +80,8 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-xl font-semibold tracking-tight">Procurement overview</h1>
-                        <p className="text-muted-foreground text-sm">Status and risk across all of your events.</p>
+                        <h1 className="text-xl font-semibold tracking-tight">Overview</h1>
+                        <p className="text-muted-foreground text-sm">Status and risk of all your events.</p>
                     </div>
                     <Button asChild>
                         <Link href={route('events.create')}>
@@ -117,18 +93,11 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {statCards.map((stat) => (
-                        <Card key={stat.label} className={cn('border-t-4', stat.card)}>
+                        <Card key={stat.label}>
                             <CardContent className="space-y-1 p-5">
                                 <div className="text-muted-foreground flex items-center justify-between gap-2 text-sm">
                                     <span>{stat.label}</span>
-                                    <span
-                                        className={cn(
-                                            'flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm',
-                                            stat.tone,
-                                        )}
-                                    >
-                                        <stat.icon className="size-4" />
-                                    </span>
+                                    <stat.icon className="size-4 shrink-0" />
                                 </div>
                                 <p className={cn('font-semibold tabular-nums', stat.value.length > 12 ? 'text-xl' : 'text-2xl')}>{stat.value}</p>
                             </CardContent>
@@ -137,17 +106,17 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="border-t-4 border-t-amber-500 lg:col-span-2">
+                    <Card className="lg:col-span-2">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
-                                <AlertTriangle className="size-4 text-amber-500" />
-                                Early warnings
+                                <AlertTriangle className="size-4" />
+                                Deadline risk
                             </CardTitle>
-                            <CardDescription>Analyzed events within 60 days of their date.</CardDescription>
+                            <CardDescription>Analyzed events 60 days or less away.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {warnings.length === 0 ? (
-                                <p className="text-muted-foreground text-sm">No deadline risks right now.</p>
+                                <p className="text-muted-foreground text-sm">No risks right now.</p>
                             ) : (
                                 <ul className="divide-y">
                                     {warnings.map((warning) => (
@@ -161,11 +130,11 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                                                 </Link>
                                                 <p className="text-muted-foreground text-xs">
                                                     {formatDate(warning.event.event_date)} · {formatDaysRemaining(warning.days_remaining)} ·{' '}
-                                                    {warning.unsecured_needs} needs without a deal
+                                                    {warning.unsecured_needs} needs without a vendor
                                                 </p>
                                                 {warning.unsecured_vital_needs.length > 0 && (
-                                                    <p className="text-xs text-red-600 dark:text-red-400">
-                                                        Vital still open: {warning.unsecured_vital_needs.join(', ')}
+                                                    <p className="text-destructive text-xs">
+                                                        Vital, no vendor yet: {warning.unsecured_vital_needs.join(', ')}
                                                     </p>
                                                 )}
                                             </div>
@@ -177,7 +146,7 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                         </CardContent>
                     </Card>
 
-                    <Card className="border-t-4 border-t-indigo-500">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Events by status</CardTitle>
                         </CardHeader>
@@ -188,14 +157,14 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="border-t-4 border-t-rose-500 lg:col-span-2">
+                    <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle className="text-lg">Critical vendor needs</CardTitle>
-                            <CardDescription>Needs with no quotes yet, or whose quotes were all rejected.</CardDescription>
+                            <CardTitle className="text-lg">Needs without offers</CardTitle>
+                            <CardDescription>No quotes yet, or all quotes declined.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {criticalNeeds.length === 0 ? (
-                                <p className="text-muted-foreground text-sm">Every open vendor need has at least one active quote.</p>
+                                <p className="text-muted-foreground text-sm">Every need has at least one offer.</p>
                             ) : (
                                 <ul className="divide-y">
                                     {criticalNeeds.map((need) => (
@@ -225,10 +194,10 @@ export default function Dashboard({ stats, eventStatusCounts, procurementStatusC
                         </CardContent>
                     </Card>
 
-                    <Card className="border-t-4 border-t-violet-500">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Procurement pipeline</CardTitle>
-                            <CardDescription>How far each vendor need has come.</CardDescription>
+                            <CardTitle className="text-lg">Progress</CardTitle>
+                            <CardDescription>Vendor needs per status.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <StatusBreakdown items={procurementStatusCounts} solid={(value) => procurementMeta[value].solid} />

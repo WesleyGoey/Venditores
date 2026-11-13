@@ -81,11 +81,7 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-sky-300 text-sky-700 hover:bg-sky-50 hover:text-sky-800 dark:border-sky-700 dark:text-sky-300 dark:hover:bg-sky-950"
-                >
+                <Button variant="outline" size="sm">
                     <Globe className="size-4" />
                     Find vendors online
                 </Button>
@@ -94,9 +90,8 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                 <DialogHeader>
                     <DialogTitle>Find vendors online</DialogTitle>
                     <DialogDescription>
-                        The AI searches Google for <span className="text-foreground font-medium">{category}</span> vendors
-                        {location ? ` near ${location}` : ''}. Results are suggestions: verify the vendor and ask for a real quote before you choose
-                        one.
+                        AI searches Google for <span className="text-foreground font-medium">{category}</span>
+                        {location ? ` near ${location}` : ''}. Check prices with the vendor before choosing.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -104,7 +99,7 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                     <Input
                         value={keywords}
                         onChange={(e) => setKeywords(e.target.value)}
-                        placeholder="Optional keywords, e.g. halal, outdoor, under 10 million"
+                        placeholder="Keywords (optional), e.g. halal, outdoor"
                         maxLength={200}
                         aria-label="Extra keywords"
                     />
@@ -120,18 +115,14 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                     </Button>
                 </form>
 
-                {error && (
-                    <p className="rounded-md border border-rose-300 bg-rose-50 p-3 text-sm text-rose-800 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200">
-                        {error}
-                    </p>
-                )}
+                {error && <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">{error}</p>}
 
                 {vendors && (
                     <ul className="space-y-3">
                         {vendors.map((vendor) => (
                             <li
                                 key={`${vendor.name}-${vendor.website}`}
-                                className="flex flex-col gap-3 rounded-lg border border-l-4 border-l-sky-400 p-4 sm:flex-row sm:items-start"
+                                className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-start"
                             >
                                 <div className="min-w-0 flex-1 space-y-1">
                                     <p className="font-medium">{vendor.name}</p>
@@ -142,7 +133,7 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                                                 href={vendor.website}
                                                 target="_blank"
                                                 rel="noreferrer noopener"
-                                                className="inline-flex items-center gap-1 text-sky-700 underline-offset-4 hover:underline dark:text-sky-300"
+                                                className="text-primary inline-flex items-center gap-1 underline-offset-4 hover:underline"
                                             >
                                                 <ExternalLink className="size-3" />
                                                 Website
@@ -150,9 +141,7 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                                         )}
                                         {vendor.contact && <span>{vendor.contact}</span>}
                                         <span>
-                                            {vendor.estimated_price !== null
-                                                ? `Listed price ~ ${formatRupiah(vendor.estimated_price)}`
-                                                : 'No published price'}
+                                            {vendor.estimated_price !== null ? `~ ${formatRupiah(vendor.estimated_price)}` : 'No published price'}
                                         </span>
                                     </div>
                                 </div>
@@ -179,7 +168,7 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
 
                 {sources.length > 0 && (
                     <div className="text-muted-foreground space-y-1 text-xs">
-                        <p className="font-medium">Pages the AI consulted</p>
+                        <p className="font-medium">Sources</p>
                         <ul className="space-y-0.5">
                             {sources.slice(0, 6).map((source) => (
                                 <li key={source.url} className="truncate">
