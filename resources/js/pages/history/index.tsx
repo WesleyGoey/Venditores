@@ -1,4 +1,5 @@
 import Heading from '@/components/heading';
+import SortSelect from '@/components/sort-select';
 import { EventStatusBadge, ProcurementStatusBadge } from '@/components/status-badges';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
@@ -29,21 +30,50 @@ interface HistoryEvent {
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'History', href: '/history' }];
 
+type EventSort = 'date_desc' | 'date_asc' | 'name_asc' | 'name_desc' | 'spend_desc';
+type VendorSort = 'uses_desc' | 'name_asc' | 'name_desc';
+
+const eventSortOptions: { value: EventSort; label: string }[] = [
+    { value: 'date_desc', label: 'Newest first' },
+    { value: 'date_asc', label: 'Oldest first' },
+    { value: 'name_asc', label: 'Name: A to Z' },
+    { value: 'name_desc', label: 'Name: Z to A' },
+    { value: 'spend_desc', label: 'Highest spend' },
+];
+
+const vendorSortOptions: { value: VendorSort; label: string }[] = [
+    { value: 'uses_desc', label: 'Most used' },
+    { value: 'name_asc', label: 'Name: A to Z' },
+    { value: 'name_desc', label: 'Name: Z to A' },
+];
+
+const spend = (event: HistoryEvent) => event.vendors.reduce((sum, vendor) => sum + vendor.price, 0);
+
 export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
     const [tab, setTab] = useState<'events' | 'vendors'>('events');
     const [query, setQuery] = useState('');
+    const [eventSort, setEventSort] = useState<EventSort>('date_desc');
+    const [vendorSort, setVendorSort] = useState<VendorSort>('uses_desc');
     const needle = query.trim().toLowerCase();
 
-    const shownEvents = useMemo(
-        () =>
-            events.filter(
+    const shownEvents = useMemo(() => {
+        const compare: Record<EventSort, (a: HistoryEvent, b: HistoryEvent) => number> = {
+            date_desc: (a, b) => b.event_date.localeCompare(a.event_date),
+            date_asc: (a, b) => a.event_date.localeCompare(b.event_date),
+            name_asc: (a, b) => a.name.localeCompare(b.name),
+            name_desc: (a, b) => b.name.localeCompare(a.name),
+            spend_desc: (a, b) => spend(b) - spend(a),
+        };
+
+        return events
+            .filter(
                 (event) =>
                     needle === '' ||
                     event.name.toLowerCase().includes(needle) ||
                     event.vendors.some((vendor) => vendor.name.toLowerCase().includes(needle) || vendor.category.toLowerCase().includes(needle)),
-            ),
-        [events, needle],
-    );
+            )
+            .sort(compare[eventSort]);
+    }, [events, needle, eventSort]);
 
     // The same vendor can be used in several events: group by name.
     const vendors = useMemo(() => {
@@ -65,8 +95,18 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                     entry.name.toLowerCase().includes(needle) ||
                     entry.uses.some((use) => use.vendor.category.toLowerCase().includes(needle)),
             )
-            .sort((a, b) => b.uses.length - a.uses.length || a.name.localeCompare(b.name));
-    }, [events, needle]);
+            .sort((a, b) => {
+                if (vendorSort === 'name_asc') {
+                    return a.name.localeCompare(b.name);
+                }
+
+                if (vendorSort === 'name_desc') {
+                    return b.name.localeCompare(a.name);
+                }
+
+                return b.uses.length - a.uses.length || a.name.localeCompare(b.name);
+            });
+    }, [events, needle, vendorSort]);
 
     const totalVendors = events.reduce((sum, event) => sum + event.vendors.length, 0);
 
@@ -77,7 +117,10 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                 <Heading title="History" description={`${events.length} events, ${totalVendors} vendors chosen.`} />
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <div className="inline-flex rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5" role="tablist">
+                    <div
+                        className="inline-flex rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5"
+                        role="tablist"
+                    >
                         {(
                             [
                                 ['events', 'By event'],
@@ -90,7 +133,10 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                                 role="tab"
                                 aria-selected={tab === value}
                                 onClick={() => setTab(value)}
-                                className={cn('rounded-md px-3 py-1.5 font-medium', tab === value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground')}
+                                className={cn(
+                                    'rounded-md px-3 py-1.5 font-medium',
+                                    tab === value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground',
+                                )}
                             >
                                 {label}
                             </button>
@@ -105,6 +151,11 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                             className="pl-8"
                         />
                     </div>
+                    {tab === 'events' ? (
+                        <SortSelect value={eventSort} onChange={setEventSort} options={eventSortOptions} />
+                    ) : (
+                        <SortSelect value={vendorSort} onChange={setVendorSort} options={vendorSortOptions} />
+                    )}
                 </div>
 
                 {tab === 'events' ? (

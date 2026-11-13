@@ -1,12 +1,16 @@
 import QuoteFormDialog from '@/components/quote-form-dialog';
+import SortSelect from '@/components/sort-select';
 import { RatingSummary } from '@/components/star-rating';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { formatDate, formatRupiah } from '@/lib/format';
+import { linkLabel } from '@/lib/social';
 import { cn } from '@/lib/utils';
+import { sortVendors, vendorSortOptions, type VendorSort } from '@/lib/vendor-sort';
 import { type RecommendedVendor, type UsedVendor } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, ExternalLink, Plus, SearchX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, Plus, Search, SearchX } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
 interface VendorPickerProps {
@@ -26,6 +30,34 @@ type Filter = 'same' | 'other';
 
 /** Vendors per page, two rows of the two-column grid. */
 const PAGE_SIZE = 4;
+
+type UsedSort = 'recent' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
+
+const usedSortOptions: { value: UsedSort; label: string }[] = [
+    { value: 'recent', label: 'Most recent' },
+    { value: 'name_asc', label: 'Name: A to Z' },
+    { value: 'name_desc', label: 'Name: Z to A' },
+    { value: 'price_asc', label: 'Price: low to high' },
+    { value: 'price_desc', label: 'Price: high to low' },
+];
+
+function sortUsed(items: UsedVendor[], sort: UsedSort): UsedVendor[] {
+    const compare: Record<UsedSort, (a: UsedVendor, b: UsedVendor) => number> = {
+        recent: (a, b) => b.event_date.localeCompare(a.event_date),
+        name_asc: (a, b) => a.name.localeCompare(b.name),
+        name_desc: (a, b) => b.name.localeCompare(a.name),
+        price_asc: (a, b) => a.price - b.price,
+        price_desc: (a, b) => b.price - a.price,
+    };
+
+    return [...items].sort(compare[sort]);
+}
+
+function matchesQuery(query: string, ...fields: (string | null)[]): boolean {
+    const needle = query.trim().toLowerCase();
+
+    return needle === '' || fields.some((field) => field?.toLowerCase().includes(needle));
+}
 
 function fits(a: string, b: string): boolean {
     const x = a.trim().toLowerCase();
@@ -55,7 +87,7 @@ interface VendorCardProps {
 /** One vendor as a card: who, what they offer, price, and one clear action. */
 function VendorCard({ eventId, vendorNeedId, name, category, rating, text, priceLabel, price, links, defaults }: VendorCardProps) {
     return (
-        <li className="flex flex-col gap-3 rounded-xl border border-white/70 bg-white/40 p-4 dark:border-white/10 dark:bg-white/5">
+        <li className="flex flex-col gap-3 rounded-xl border border-black/10 bg-white/60 p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/15 dark:bg-white/5">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <p className="truncate font-semibold">{name}</p>
@@ -94,11 +126,20 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
     const [tab, setTab] = useState<Tab>('recommended');
     const [filter, setFilter] = useState<Filter>('same');
     const [page, setPage] = useState(1);
+    const [query, setQuery] = useState('');
+    const [recommendedSort, setRecommendedSort] = useState<VendorSort>('rating_desc');
+    const [usedOrder, setUsedOrder] = useState<UsedSort>('recent');
 
     const keep = (category: string) => isSame(category, needCategory, relatedCategories) === (filter === 'same');
 
-    const shownRecommended = recommended.filter((vendor) => keep(vendor.category));
-    const shownUsed = used.filter((vendor) => keep(vendor.category));
+    const shownRecommended = sortVendors(
+        recommended.filter((vendor) => keep(vendor.category) && matchesQuery(query, vendor.name, vendor.description, vendor.category)),
+        recommendedSort,
+    );
+    const shownUsed = sortUsed(
+        used.filter((vendor) => keep(vendor.category) && matchesQuery(query, vendor.name, vendor.category, vendor.event)),
+        usedOrder,
+    );
     const total = tab === 'recommended' ? shownRecommended.length : shownUsed.length;
     const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     const current = Math.min(page, pages);
@@ -174,13 +215,39 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                     {filter === 'same' && <span className="text-muted-foreground text-xs">{sameLabel}</span>}
                 </div>
 
+                <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="relative flex-1">
+                        <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                        <Input
+                            value={query}
+                            onChange={(e) => change(() => setQuery(e.target.value))}
+                            placeholder="Search name or description"
+                            className="pl-9"
+                            aria-label="Search vendors"
+                        />
+                    </div>
+                    {tab === 'recommended' ? (
+                        <SortSelect
+                            value={recommendedSort}
+                            onChange={(value) => change(() => setRecommendedSort(value))}
+                            options={vendorSortOptions}
+                        />
+                    ) : (
+                        <SortSelect value={usedOrder} onChange={(value) => change(() => setUsedOrder(value))} options={usedSortOptions} />
+                    )}
+                </div>
+
                 {total === 0 ? (
                     <div className="text-muted-foreground flex flex-col items-center gap-2 rounded-xl border border-dashed border-black/10 px-4 py-10 text-center text-sm dark:border-white/15">
                         <SearchX className="size-6 opacity-60" />
                         <p className="max-w-sm">
                             {tab === 'recommended'
-                                ? 'No recommended vendors here yet. Try the Other filter.'
-                                : 'No vendors used before. Vendors you choose in an event show up here.'}
+                                ? query
+                                    ? 'Nothing matches your search.'
+                                    : 'No recommended vendors here yet. Try the Other filter.'
+                                : query
+                                  ? 'Nothing matches your search.'
+                                  : 'No vendors used before. Vendors you choose in an event show up here.'}
                         </p>
                     </div>
                 ) : (
@@ -209,7 +276,7 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                                                           className="text-primary inline-flex items-center gap-1 hover:underline"
                                                       >
                                                           <ExternalLink className="size-3" />
-                                                          Website
+                                                          {linkLabel(vendor.website)}
                                                       </a>
                                                   )}
                                               </div>

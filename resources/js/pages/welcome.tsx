@@ -227,12 +227,12 @@ export default function Welcome() {
                         </section>
                     </main>
 
-                    <footer className="flex items-center justify-between gap-4 border-t border-[#17191D]/10 py-8 text-sm text-[#5B616A]">
+                    <footer className="flex flex-col items-center justify-between gap-4 border-t border-[#17191D]/10 py-8 text-sm text-[#5B616A] sm:flex-row">
                         <span className="flex items-center gap-2 font-semibold text-[#17191D]" style={displayFont}>
                             <AppLogoIcon className="size-4 fill-[#244CFF]" />
                             Venditores
                         </span>
-                        <span>{new Date().getFullYear()}</span>
+                        <p>&copy; 2026 Venditores. All rights reserved.</p>
                     </footer>
                 </div>
             </div>

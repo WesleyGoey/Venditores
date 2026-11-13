@@ -115,14 +115,15 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
                             <InputError message={errors.contact} />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="vendor-website">Website</Label>
+                            <Label htmlFor="vendor-website">Social media or website</Label>
                             <Input
                                 id="vendor-website"
                                 type="url"
                                 value={data.website}
                                 onChange={(e) => setData('website', e.target.value)}
-                                placeholder="https://"
+                                placeholder="https://instagram.com/vendor"
                             />
+                            <p className="text-muted-foreground text-xs">Instagram, TikTok, Facebook, WhatsApp or a website. Optional.</p>
                             <InputError message={errors.website} />
                         </div>
                     </div>

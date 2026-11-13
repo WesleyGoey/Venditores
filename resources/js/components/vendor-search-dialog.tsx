@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { formatRupiah } from '@/lib/format';
+import { linkLabel } from '@/lib/social';
 import { xsrfToken } from '@/lib/xsrf';
 import { router } from '@inertiajs/react';
 import { ExternalLink, Globe, LoaderCircle, Plus, Search } from 'lucide-react';
@@ -131,7 +132,7 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                                                 className="text-primary inline-flex items-center gap-1 underline-offset-4 hover:underline"
                                             >
                                                 <ExternalLink className="size-3" />
-                                                Website
+                                                {linkLabel(vendor.website)}
                                             </a>
                                         )}
                                         {vendor.contact && <span>{vendor.contact}</span>}

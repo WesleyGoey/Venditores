@@ -1,4 +1,5 @@
 import Heading from '@/components/heading';
+import SortSelect from '@/components/sort-select';
 import { RatingSummary } from '@/components/star-rating';
 import { QuoteStatusBadge } from '@/components/status-badges';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,9 @@ import VendorFormDialog from '@/components/vendor-form-dialog';
 import VendorReviewsDialog from '@/components/vendor-reviews-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { formatRupiah } from '@/lib/format';
+import { linkLabel } from '@/lib/social';
 import { cn } from '@/lib/utils';
+import { sortVendors, vendorSortOptions, type VendorSort } from '@/lib/vendor-sort';
 import { type BreadcrumbItem, type QuoteStatus, type RecommendedVendor, type SharedData, type VendorReview } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ExternalLink, Pencil, Plus, Search, Trash2 } from 'lucide-react';
@@ -37,6 +40,28 @@ interface VendorsIndexProps {
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Vendors', href: '/vendors' }];
 
+type UserSort = 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'category';
+
+const userSortOptions: { value: UserSort; label: string }[] = [
+    { value: 'name_asc', label: 'Name: A to Z' },
+    { value: 'name_desc', label: 'Name: Z to A' },
+    { value: 'price_asc', label: 'Price: low to high' },
+    { value: 'price_desc', label: 'Price: high to low' },
+    { value: 'category', label: 'Category' },
+];
+
+function sortUserVendors(items: UserVendor[], sort: UserSort): UserVendor[] {
+    const compare: Record<UserSort, (a: UserVendor, b: UserVendor) => number> = {
+        name_asc: (a, b) => a.name.localeCompare(b.name),
+        name_desc: (a, b) => b.name.localeCompare(a.name),
+        price_asc: (a, b) => a.price - b.price,
+        price_desc: (a, b) => b.price - a.price,
+        category: (a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name),
+    };
+
+    return [...items].sort(compare[sort]);
+}
+
 function matches(query: string, ...fields: (string | null)[]): boolean {
     const needle = query.trim().toLowerCase();
 
@@ -49,6 +74,8 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
     const [tab, setTab] = useState<'recommended' | 'users'>('recommended');
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
+    const [sort, setSort] = useState<VendorSort>('name_asc');
+    const [userSort, setUserSort] = useState<UserSort>('name_asc');
     const categories = useMemo(() => {
         const used = new Set(vendors.map((vendor) => vendor.category));
 
@@ -56,12 +83,20 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
     }, [vendors, vendorCategories]);
 
     const shownVendors = useMemo(
-        () => vendors.filter((v) => (category === 'All' || v.category === category) && matches(query, v.name, v.category, v.description)),
-        [vendors, query, category],
+        () =>
+            sortVendors(
+                vendors.filter((v) => (category === 'All' || v.category === category) && matches(query, v.name, v.category, v.description)),
+                sort,
+            ),
+        [vendors, query, category, sort],
     );
     const shownUserVendors = useMemo(
-        () => (userVendors ?? []).filter((v) => matches(query, v.name, v.category, v.event, v.user)),
-        [userVendors, query],
+        () =>
+            sortUserVendors(
+                (userVendors ?? []).filter((v) => matches(query, v.name, v.category, v.event, v.user)),
+                userSort,
+            ),
+        [userVendors, query, userSort],
     );
 
     const deleteVendor = (vendor: RecommendedVendor) => {
@@ -97,7 +132,10 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
 
                 <div className="flex flex-wrap items-center gap-3">
                     {userVendors !== null && (
-                        <div className="inline-flex rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5" role="tablist">
+                        <div
+                            className="inline-flex rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5"
+                            role="tablist"
+                        >
                             {(
                                 [
                                     ['recommended', `Recommended (${vendors.length})`],
@@ -112,7 +150,9 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                                     onClick={() => setTab(value)}
                                     className={cn(
                                         'rounded-md px-3 py-1.5 font-medium',
-                                        tab === value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                                        tab === value
+                                            ? 'bg-primary text-primary-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground',
                                     )}
                                 >
                                     {label}
@@ -124,6 +164,11 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                         <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
                         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name or category" className="pl-8" />
                     </div>
+                    {tab === 'recommended' ? (
+                        <SortSelect value={sort} onChange={setSort} options={vendorSortOptions} />
+                    ) : (
+                        <SortSelect value={userSort} onChange={setUserSort} options={userSortOptions} />
+                    )}
                 </div>
 
                 {tab === 'recommended' && categories.length > 2 && (
@@ -136,7 +181,9 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                                 aria-pressed={category === name}
                                 className={cn(
                                     'rounded-full border px-3 py-1 text-xs font-medium',
-                                    category === name ? 'border-primary bg-primary text-primary-foreground' : 'border-white/70 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:bg-white/5',
+                                    category === name
+                                        ? 'border-primary bg-primary text-primary-foreground'
+                                        : 'border-white/70 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:bg-white/5',
                                 )}
                             >
                                 {name}
@@ -175,7 +222,7 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                                                 className="text-primary inline-flex items-center gap-1 hover:underline"
                                             >
                                                 <ExternalLink className="size-3" />
-                                                Website
+                                                {linkLabel(vendor.website)}
                                             </a>
                                         )}
                                     </div>
