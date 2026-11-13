@@ -205,7 +205,7 @@ Tersedia setelah `php artisan db:seed`. Seeder ini hanya untuk lokal.
 | `test@example.com` | `password` |
 | `admin@gmail.com` (admin) | `admin123` |
 
-Akun admin juga bisa dibuat atau di-reset tanpa menghapus data lain:
+Akun admin dibuat otomatis di server setiap deploy (hanya jika belum ada, password yang sudah diganti tidak ditimpa). Di lokal:
 
 ```bash
 php artisan db:seed --class=AdminSeeder
