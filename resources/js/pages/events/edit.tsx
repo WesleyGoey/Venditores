@@ -4,7 +4,6 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
-
 interface EditEventProps {
     event: {
         id: number;
@@ -17,7 +16,6 @@ interface EditEventProps {
     };
 }
 
-
 export default function EditEvent({ event }: EditEventProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Events', href: route('events.index') },
@@ -25,12 +23,11 @@ export default function EditEvent({ event }: EditEventProps) {
         { title: 'Edit', href: route('events.edit', event.id) },
     ];
 
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit ${event.name}`} />
             <div className="p-4">
-                <Heading title="Edit event" description="Changing the budget does not recalculate allocations. Re-run the analysis to rebalance." />
+                <Heading title="Edit event" description="Changing the budget keeps the current split. Analyze again to rebalance." />
                 <EventForm
                     isUpdate
                     submitUrl={route('events.update', event.id)}

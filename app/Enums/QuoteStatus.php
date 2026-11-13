@@ -27,9 +27,9 @@ enum QuoteStatus: string
     public function description(): string
     {
         return match ($this) {
-            self::Pending => 'Offer received, not decided yet.',
-            self::Accepted => 'You picked this offer. The need moves to "Vendor chosen".',
-            self::Rejected => 'You turned this offer down. It no longer counts as an active option.',
+            self::Pending => 'Not decided yet.',
+            self::Accepted => 'Picked. The need moves to "Vendor chosen".',
+            self::Rejected => 'Turned down. No longer an option.',
         };
     }
 }

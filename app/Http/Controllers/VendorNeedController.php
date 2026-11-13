@@ -1,20 +1,18 @@
 <?php
 
-
 namespace App\Http\Controllers;
-
 
 use App\Enums\ProcurementStatus;
 use App\Enums\QuoteStatus;
 use App\Http\Requests\StoreVendorNeedRequest;
 use App\Http\Requests\UpdateVendorNeedRequest;
 use App\Models\Event;
+use App\Models\RecommendedVendor;
 use App\Models\VendorNeed;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
-
 
 class VendorNeedController extends Controller
 {
@@ -25,13 +23,11 @@ class VendorNeedController extends Controller
     {
         Gate::authorize('view', $event);
 
-
         $vendorNeed->load(['quotes' => fn ($query) => $query
             ->orderByRaw('match_score is null')
             ->orderByDesc('match_score')
             ->orderBy('price'),
         ]);
-
 
         return Inertia::render('vendor-needs/show', [
             'event' => [
@@ -39,6 +35,17 @@ class VendorNeedController extends Controller
                 'event_date' => $event->event_date->toDateString(),
             ],
             'vendorNeed' => $vendorNeed,
+            'recommendedVendors' => RecommendedVendor::query()
+                ->forCategory($vendorNeed->category)
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (RecommendedVendor $vendor): array => [
+                    ...$vendor->only(['id', 'name', 'category', 'description', 'contact', 'website', 'price_estimate']),
+                    'rating' => $vendor->reviews_avg_rating !== null ? round((float) $vendor->reviews_avg_rating, 1) : null,
+                    'reviews_count' => $vendor->reviews_count,
+                ]),
             'procurementStatuses' => array_map(
                 fn (ProcurementStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
                 ProcurementStatus::cases(),
@@ -50,7 +57,6 @@ class VendorNeedController extends Controller
         ]);
     }
 
-
     /**
      * Store a manually added vendor need.
      */
@@ -58,10 +64,8 @@ class VendorNeedController extends Controller
     {
         $event->vendorNeeds()->create($request->validated());
 
-
         return back()->with('success', 'Vendor need added.');
     }
-
 
     /**
      * Update a vendor need.
@@ -70,18 +74,14 @@ class VendorNeedController extends Controller
     {
         $vendorNeed->fill($request->validated());
 
-
         if ($vendorNeed->isDirty('allocated_budget')) {
             $vendorNeed->allocation_basis_points = null;
         }
 
-
         $vendorNeed->save();
-
 
         return back()->with('success', 'Vendor need updated.');
     }
-
 
     /**
      * Delete a vendor need and its quotes.
@@ -90,9 +90,7 @@ class VendorNeedController extends Controller
     {
         Gate::authorize('update', $event);
 
-
         $vendorNeed->delete();
-
 
         return to_route('events.show', $event)->with('success', 'Vendor need deleted.');
     }

@@ -3,8 +3,6 @@ import { EventStatusBadge, RiskBadge } from '@/components/status-badges';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatRupiah } from '@/lib/format';
-import { riskMeta } from '@/lib/status-meta';
-import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type EventStatus, type RiskLevel } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { CalendarPlus, MapPin } from 'lucide-react';
@@ -29,7 +27,7 @@ export default function EventsIndex({ events }: { events: EventListItem[] }) {
             <Head title="Events" />
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                    <Heading title="Events" description="Every event you are procuring vendors for." />
+                    <Heading title="Events" description="All your events." />
                     <Button asChild>
                         <Link href={route('events.create')}>
                             <CalendarPlus className="size-4" />
@@ -39,11 +37,9 @@ export default function EventsIndex({ events }: { events: EventListItem[] }) {
                 </div>
 
                 {events.length === 0 ? (
-                    <div className="border-primary/30 bg-accent/40 rounded-xl border border-dashed p-10 text-center">
+                    <div className="rounded-lg border border-dashed p-10 text-center">
                         <p className="font-medium">No events yet</p>
-                        <p className="text-muted-foreground mt-1 text-sm">
-                            Create your first event and upload its proposal to get an AI vendor plan.
-                        </p>
+                        <p className="text-muted-foreground mt-1 text-sm">Create one and upload its proposal.</p>
                     </div>
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -51,10 +47,7 @@ export default function EventsIndex({ events }: { events: EventListItem[] }) {
                             <Link
                                 key={event.id}
                                 href={route('events.show', event.id)}
-                                className={cn(
-                                    'bg-card hover:border-primary/40 flex flex-col gap-3 rounded-xl border border-t-4 p-4 shadow-xs transition hover:shadow-md',
-                                    event.status === 'completed' ? 'border-t-emerald-500' : riskMeta[event.risk_level].top,
-                                )}
+                                className="bg-card hover:border-primary flex flex-col gap-3 rounded-lg border p-4 transition-colors"
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <h3 className="leading-tight font-semibold">{event.name}</h3>
@@ -74,7 +67,7 @@ export default function EventsIndex({ events }: { events: EventListItem[] }) {
                                         <p className="text-muted-foreground text-xs">Budget</p>
                                         <p className="font-semibold tabular-nums">{formatRupiah(event.total_budget)}</p>
                                         <p className="text-muted-foreground text-xs">
-                                            {event.vendor_needs_count} vendor needs · {formatRupiah(event.allocated_budget)} allocated
+                                            {event.vendor_needs_count} needs · {formatRupiah(event.allocated_budget)} allocated
                                         </p>
                                     </div>
                                     {event.status !== 'completed' && <RiskBadge level={event.risk_level} />}

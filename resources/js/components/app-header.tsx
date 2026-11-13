@@ -10,7 +10,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { CalendarDays, LayoutGrid, Menu, Search } from 'lucide-react';
+import { CalendarDays, LayoutGrid, Menu, Search, Store } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -24,6 +24,11 @@ const mainNavItems: NavItem[] = [
         title: 'Events',
         url: '/events',
         icon: CalendarDays,
+    },
+    {
+        title: 'Vendors',
+        url: '/vendors',
+        icon: Store,
     },
 ];
 

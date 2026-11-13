@@ -1,6 +1,7 @@
 import ProcurementStatusSelect from '@/components/procurement-status-select';
 import ProcurementStepper from '@/components/procurement-stepper';
 import QuoteFormDialog from '@/components/quote-form-dialog';
+import RecommendedVendorList from '@/components/recommended-vendor-list';
 import { QuoteStatusBadge, VitalBadge } from '@/components/status-badges';
 import StatusGuide from '@/components/status-guide';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,18 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatPercentage, formatRupiah } from '@/lib/format';
 import { quoteMeta } from '@/lib/status-meta';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type EventStatus, type Option, type ProcurementStatus, type Quote, type QuoteStatus, type VendorNeed } from '@/types';
+import {
+    type BreadcrumbItem,
+    type EventStatus,
+    type Option,
+    type ProcurementStatus,
+    type Quote,
+    type QuoteStatus,
+    type RecommendedVendor,
+    type VendorNeed,
+} from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Check, LoaderCircle, Pencil, Plus, Sparkles, Trash2, Wallet } from 'lucide-react';
+import { ArrowLeft, Check, LoaderCircle, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface ShowVendorNeedProps {
@@ -22,21 +32,22 @@ interface ShowVendorNeedProps {
     vendorNeed: VendorNeed & { quotes: Quote[] };
     procurementStatuses: Option<ProcurementStatus>[];
     quoteStatuses: Option<QuoteStatus>[];
+    recommendedVendors: RecommendedVendor[];
 }
 
 function scoreColor(score: number): string {
     if (score >= 80) {
-        return 'text-emerald-600 dark:text-emerald-400';
+        return 'text-primary';
     }
 
     if (score >= 60) {
-        return 'text-amber-600 dark:text-amber-400';
+        return 'text-foreground';
     }
 
-    return 'text-red-600 dark:text-red-400';
+    return 'text-destructive';
 }
 
-export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses, quoteStatuses }: ShowVendorNeedProps) {
+export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses, quoteStatuses, recommendedVendors }: ShowVendorNeedProps) {
     const [matching, setMatching] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -58,7 +69,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
     };
 
     const deleteNeed = () => {
-        if (confirm(`Delete "${vendorNeed.category}" and all of its quotes?`)) {
+        if (confirm(`Delete "${vendorNeed.category}" and its quotes?`)) {
             router.delete(route('events.vendor-needs.destroy', [event.id, vendorNeed.id]));
         }
     };
@@ -115,7 +126,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     </div>
                 </div>
 
-                <Card className="border-t-4 border-t-indigo-500">
+                <Card>
                     <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
                         <CardTitle className="text-lg">Progress</CardTitle>
                         <StatusGuide />
@@ -126,7 +137,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                 </Card>
 
                 <div className="grid gap-4 md:grid-cols-3">
-                    <Card className="border-t-4 border-t-sky-500 md:col-span-2">
+                    <Card className="md:col-span-2">
                         <CardHeader>
                             <CardTitle className="text-lg">Specification</CardTitle>
                         </CardHeader>
@@ -134,12 +145,9 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                             <p className="text-sm leading-relaxed whitespace-pre-line">{vendorNeed.specification || 'No specification yet.'}</p>
                         </CardContent>
                     </Card>
-                    <Card className="border-t-4 border-t-emerald-500 bg-gradient-to-br from-emerald-50/70 to-transparent dark:from-emerald-950/30">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <Wallet className="size-4 text-emerald-600 dark:text-emerald-400" />
-                                Allocated budget
-                            </CardTitle>
+                            <CardTitle className="text-lg">Budget</CardTitle>
                             <CardDescription>{formatPercentage(vendorNeed.allocated_budget, event.total_budget)} of the event budget</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -148,11 +156,15 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     </Card>
                 </div>
 
-                <Card className="border-t-4 border-t-violet-500">
+                <RecommendedVendorList eventId={event.id} vendorNeedId={vendorNeed.id} vendors={recommendedVendors} />
+
+                <Card>
                     <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 space-y-0">
                         <div className="space-y-1.5">
-                            <CardTitle className="text-lg">Vendor quotes</CardTitle>
-                            <CardDescription>Match score = 60% specification fit (AI) + 40% budget fit.</CardDescription>
+                            <CardTitle className="text-lg">Quotes</CardTitle>
+                            <CardDescription>
+                                Score = 60% spec fit (AI reads the offer details only) + 40% price (cheaper scores higher).
+                            </CardDescription>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             <VendorSearchDialog
@@ -163,7 +175,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                             />
                             <Button variant="outline" size="sm" onClick={matchQuotes} disabled={matching || vendorNeed.quotes.length === 0}>
                                 {matching ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                                {matching ? 'Scoring quotes…' : 'Match quotes with AI'}
+                                {matching ? 'Scoring…' : 'Score with AI'}
                             </Button>
                             <QuoteFormDialog
                                 eventId={event.id}
@@ -180,8 +192,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                     <CardContent>
                         {vendorNeed.quotes.length === 0 ? (
                             <p className="text-muted-foreground py-6 text-center text-sm">
-                                No quotes yet. Use &quot;Find vendors online&quot; to search the web, or &quot;Add quote&quot; to enter an offer you
-                                already received.
+                                No quotes yet. Find vendors online, pick a recommended vendor, or add a quote.
                             </p>
                         ) : (
                             <div className="space-y-3">
@@ -192,10 +203,9 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                                         <div
                                             key={quote.id}
                                             className={cn(
-                                                'flex flex-col gap-3 rounded-lg border border-l-4 p-4 md:flex-row md:items-start',
-                                                quote.status === 'accepted' && 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20',
-                                                quote.status === 'pending' && 'border-l-amber-400',
-                                                quote.status === 'rejected' && 'border-l-rose-400 opacity-70',
+                                                'flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-start',
+                                                quote.status === 'accepted' && 'border-primary bg-primary/5',
+                                                quote.status === 'rejected' && 'opacity-60',
                                             )}
                                         >
                                             <div className="min-w-0 flex-1 space-y-1">
@@ -215,9 +225,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                                                     <p
                                                         className={cn(
                                                             'text-xs tabular-nums',
-                                                            difference > 0
-                                                                ? 'text-red-600 dark:text-red-400'
-                                                                : 'text-emerald-600 dark:text-emerald-400',
+                                                            difference > 0 ? 'text-destructive' : 'text-muted-foreground',
                                                         )}
                                                     >
                                                         {difference > 0 ? `${formatRupiah(difference)} over` : `${formatRupiah(-difference)} under`}
@@ -241,7 +249,7 @@ export default function ShowVendorNeed({ event, vendorNeed, procurementStatuses,
                                                     {quote.status !== 'accepted' && (
                                                         <Button
                                                             size="sm"
-                                                            className="h-8 bg-emerald-600 text-white hover:bg-emerald-700"
+                                                            className="h-8"
                                                             onClick={() => updateQuoteStatus(quote, 'accepted')}
                                                             title={quoteMeta.accepted.description}
                                                         >

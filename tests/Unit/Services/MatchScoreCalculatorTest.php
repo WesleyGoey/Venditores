@@ -2,29 +2,46 @@
 
 use App\Services\MatchScoreCalculator;
 
-test('budget score is 100 when the price is within the allocation', function (int $price) {
-    expect((new MatchScoreCalculator)->budgetScore($price, 10_000_000))->toBe(100);
-})->with([0, 9_999_999, 10_000_000]);
+test('a cheaper offer scores higher, also inside the budget', function (int $price, int $expectedScore) {
+    expect((new MatchScoreCalculator)->budgetScore($price, 10_000_000))->toBe($expectedScore);
+})->with([
+    'free' => [0, 100],
+    '50% of budget' => [5_000_000, 85],
+    '90% of budget' => [9_000_000, 73],
+    'exactly the budget' => [10_000_000, 70],
+]);
 
 test('budget score drops 2 points per percent over budget', function (int $price, int $expectedScore) {
     expect((new MatchScoreCalculator)->budgetScore($price, 10_000_000))->toBe($expectedScore);
 })->with([
-    '1% over' => [10_100_000, 98],
-    '10% over' => [11_000_000, 80],
-    '25% over' => [12_500_000, 50],
-    '50% over' => [15_000_000, 0],
+    '1% over' => [10_100_000, 68],
+    '10% over' => [11_000_000, 50],
+    '35% over' => [13_500_000, 0],
     '80% over' => [18_000_000, 0],
 ]);
 
-test('budget score is 0 when nothing is allocated but the quote costs money', function () {
-    expect((new MatchScoreCalculator)->budgetScore(1, 0))->toBe(0);
+test('a cheaper offer never scores lower than a pricier one', function () {
+    $calculator = new MatchScoreCalculator;
+    $scores = array_map(fn (int $price): int => $calculator->budgetScore($price, 10_000_000), range(0, 20_000_000, 500_000));
+
+    $sorted = $scores;
+    rsort($sorted);
+
+    expect($scores)->toBe($sorted);
+});
+
+test('with nothing allocated only a free quote scores', function () {
+    $calculator = new MatchScoreCalculator;
+
+    expect($calculator->budgetScore(1, 0))->toBe(0)
+        ->and($calculator->budgetScore(0, 0))->toBe(100);
 });
 
 test('match score weighs spec 60 percent and budget 40 percent', function () {
     expect((new MatchScoreCalculator)->calculate(70, 11_000_000, 10_000_000))->toBe([
         'spec_score' => 70,
-        'budget_score' => 80,
-        'match_score' => 74,
+        'budget_score' => 50,
+        'match_score' => 62,
     ]);
 });
 
