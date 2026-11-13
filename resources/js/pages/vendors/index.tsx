@@ -97,7 +97,7 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
 
                 <div className="flex flex-wrap items-center gap-3">
                     {userVendors !== null && (
-                        <div className="bg-muted inline-flex rounded-lg p-1 text-sm" role="tablist">
+                        <div className="inline-flex rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5" role="tablist">
                             {(
                                 [
                                     ['recommended', `Recommended (${vendors.length})`],
@@ -112,7 +112,7 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                                     onClick={() => setTab(value)}
                                     className={cn(
                                         'rounded-md px-3 py-1.5 font-medium',
-                                        tab === value ? 'bg-card shadow-xs' : 'text-muted-foreground hover:text-foreground',
+                                        tab === value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
                                     )}
                                 >
                                     {label}
@@ -136,7 +136,7 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                                 aria-pressed={category === name}
                                 className={cn(
                                     'rounded-full border px-3 py-1 text-xs font-medium',
-                                    category === name ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-muted',
+                                    category === name ? 'border-primary bg-primary text-primary-foreground' : 'border-white/70 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:bg-white/5',
                                 )}
                             >
                                 {name}
@@ -153,7 +153,7 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                     ) : (
                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                             {shownVendors.map((vendor) => (
-                                <div key={vendor.id} className="bg-card flex flex-col gap-3 rounded-lg border p-4">
+                                <div key={vendor.id} className="glass flex flex-col gap-3 rounded-2xl p-4">
                                     <div className="space-y-1">
                                         <div className="flex items-start justify-between gap-2">
                                             <p className="leading-tight font-semibold">{vendor.name}</p>
@@ -208,7 +208,7 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                         </div>
                     )
                 ) : (
-                    <div className="bg-card overflow-x-auto rounded-lg border">
+                    <div className="glass overflow-x-auto rounded-2xl">
                         {shownUserVendors.length === 0 ? (
                             <p className="text-muted-foreground p-10 text-center text-sm">No vendors added by users yet.</p>
                         ) : (

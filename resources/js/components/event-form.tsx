@@ -99,7 +99,7 @@ export default function EventForm({ initialValues = {}, currentProposalName, sub
 
     return (
         <form onSubmit={submit} className="max-w-2xl space-y-6">
-            <div className="bg-card grid gap-2 rounded-lg border p-4">
+            <div className="glass grid gap-2 rounded-2xl p-4">
                 <Label htmlFor="proposal" className="flex items-center gap-2">
                     <FileText className="size-4" />
                     Proposal PDF
@@ -135,7 +135,7 @@ export default function EventForm({ initialValues = {}, currentProposalName, sub
                     value={data.name}
                     onChange={(e) => setData('name', e.target.value)}
                     required
-                    placeholder="e.g. Ciputra Tech Fest 2027"
+                    placeholder="e.g. Nusantara Tech Fest 2027"
                 />
                 <InputError message={errors.name} />
             </div>

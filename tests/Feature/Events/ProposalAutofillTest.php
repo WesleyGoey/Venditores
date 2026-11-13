@@ -19,7 +19,7 @@ function proposalFile(): UploadedFile
 
 test('a proposal alone is enough to create an event', function () {
     Http::fake([geminiEndpoint() => Http::response(geminiResponse([
-        'name' => 'Ciputra Tech Fest',
+        'name' => 'Nusantara Tech Fest',
         'event_date' => '2027-03-01',
         'location' => 'Surabaya',
         'total_budget' => 150_000_000,
@@ -30,7 +30,7 @@ test('a proposal alone is enough to create an event', function () {
     $this->actingAs($user)->post(route('events.store'), ['proposal' => proposalFile()])->assertSessionHasNoErrors();
 
     expect($user->events()->sole())
-        ->name->toBe('Ciputra Tech Fest')
+        ->name->toBe('Nusantara Tech Fest')
         ->event_date->toDateString()->toBe('2027-03-01')
         ->location->toBe('Surabaya')
         ->total_budget->toBe(150_000_000)

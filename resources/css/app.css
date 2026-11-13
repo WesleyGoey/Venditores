@@ -101,7 +101,7 @@
     --foreground: #17191d;
     --card: #f4f6f7;
     --card-foreground: #17191d;
-    --popover: #f4f6f7;
+    --popover: rgb(250 251 252 / 0.9);
     --popover-foreground: #17191d;
     --primary: #244cff;
     --primary-foreground: #ffffff;
@@ -122,14 +122,20 @@
     --chart-4: #8f96a0;
     --chart-5: #d92d20;
     --radius: 0.5rem;
-    --sidebar-background: #17191d;
-    --sidebar-foreground: #e8ebed;
+    --sidebar-background: transparent;
+    --sidebar-foreground: #17191d;
     --sidebar-primary: #244cff;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #24272d;
-    --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #2b2f36;
+    --sidebar-accent: rgb(255 255 255 / 0.65);
+    --sidebar-accent-foreground: #17191d;
+    --sidebar-border: rgb(23 25 29 / 0.08);
     --sidebar-ring: #244cff;
+    --glass: rgb(255 255 255 / 0.5);
+    --glass-border: rgb(255 255 255 / 0.7);
+    --glass-shadow: 0 8px 32px rgb(23 25 29 / 0.08);
+    --mesh-a: rgb(36 76 255 / 0.22);
+    --mesh-b: rgb(23 25 29 / 0.1);
+    --mesh-c: rgb(36 76 255 / 0.14);
 }
 
 
@@ -138,7 +144,7 @@
     --foreground: #e8ebed;
     --card: #1e2126;
     --card-foreground: #e8ebed;
-    --popover: #1e2126;
+    --popover: rgb(30 33 38 / 0.9);
     --popover-foreground: #e8ebed;
     --primary: #4d6bff;
     --primary-foreground: #ffffff;
@@ -158,14 +164,20 @@
     --chart-3: #9aa1aa;
     --chart-4: #5b616a;
     --chart-5: #f0584b;
-    --sidebar-background: #121417;
+    --sidebar-background: transparent;
     --sidebar-foreground: #e8ebed;
     --sidebar-primary: #4d6bff;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #1e2126;
+    --sidebar-accent: rgb(255 255 255 / 0.08);
     --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #24272d;
+    --sidebar-border: rgb(255 255 255 / 0.08);
     --sidebar-ring: #4d6bff;
+    --glass: rgb(255 255 255 / 0.06);
+    --glass-border: rgb(255 255 255 / 0.12);
+    --glass-shadow: 0 8px 32px rgb(0 0 0 / 0.35);
+    --mesh-a: rgb(77 107 255 / 0.28);
+    --mesh-b: rgb(255 255 255 / 0.05);
+    --mesh-c: rgb(77 107 255 / 0.16);
 }
 
 
@@ -177,7 +189,23 @@
 
     body {
         @apply bg-background text-foreground;
+        /* Colour behind the glass. Gradients, not blurred blobs: big blur filters render with visible tile edges in Safari. */
+        background-image:
+            radial-gradient(60rem 42rem at 0% 0%, var(--mesh-a), transparent 65%),
+            radial-gradient(50rem 38rem at 100% 45%, var(--mesh-b), transparent 65%),
+            radial-gradient(52rem 36rem at 30% 100%, var(--mesh-c), transparent 65%);
+        background-attachment: fixed;
     }
+}
+
+
+/* Frosted surface. Cards, the content panel and the landing page share it. */
+@utility glass {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    backdrop-filter: blur(20px) saturate(1.4);
 }
 
 

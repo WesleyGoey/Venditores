@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $event = $user->events()->create([
-            'name' => 'Ciputra Tech Fest 2027',
+            'name' => 'Nusantara Tech Fest 2027',
             'event_date' => now()->addDays(25)->toDateString(),
             'location' => 'Surabaya',
             'total_budget' => 150_000_000,

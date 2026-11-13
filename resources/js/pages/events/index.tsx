@@ -47,7 +47,7 @@ export default function EventsIndex({ events }: { events: EventListItem[] }) {
                             <Link
                                 key={event.id}
                                 href={route('events.show', event.id)}
-                                className="bg-card hover:border-primary flex flex-col gap-3 rounded-lg border p-4 transition-colors"
+                                className="glass hover:border-primary flex flex-col gap-3 rounded-2xl p-4 transition-colors"
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <h3 className="leading-tight font-semibold">{event.name}</h3>

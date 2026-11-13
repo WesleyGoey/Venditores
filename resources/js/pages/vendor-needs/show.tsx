@@ -221,25 +221,21 @@ export default function ShowVendorNeed({
                                         <div
                                             key={quote.id}
                                             className={cn(
-                                                'flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-start',
-                                                quote.status === 'accepted' && 'border-primary bg-primary/5',
+                                                'flex flex-col gap-4 rounded-xl border border-white/70 bg-white/40 p-4 dark:border-white/10 dark:bg-white/5',
+                                                quote.status === 'accepted' && 'border-primary/60 bg-primary/5 dark:bg-primary/10',
                                                 quote.status === 'rejected' && 'opacity-60',
                                             )}
                                         >
-                                            <div className="min-w-0 flex-1 space-y-1">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <p className="font-medium">{quote.vendor_name}</p>
-                                                    <QuoteStatusBadge status={quote.status} />
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="min-w-0 space-y-1">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <p className="font-semibold">{quote.vendor_name}</p>
+                                                        <QuoteStatusBadge status={quote.status} />
+                                                    </div>
+                                                    {quote.vendor_contact && <p className="text-muted-foreground text-xs">{quote.vendor_contact}</p>}
                                                 </div>
-                                                {quote.vendor_contact && <p className="text-muted-foreground text-xs">{quote.vendor_contact}</p>}
-                                                {quote.notes && <p className="text-sm whitespace-pre-line">{quote.notes}</p>}
-                                                {quote.match_reason && (
-                                                    <p className="text-muted-foreground border-l-2 pl-2 text-xs italic">AI: {quote.match_reason}</p>
-                                                )}
-                                            </div>
-                                            <div className="flex shrink-0 flex-wrap items-start gap-6 md:justify-end">
-                                                <div className="text-right">
-                                                    <p className="font-semibold tabular-nums">{formatRupiah(quote.price)}</p>
+                                                <div className="shrink-0 text-right">
+                                                    <p className="text-lg font-semibold tabular-nums">{formatRupiah(quote.price)}</p>
                                                     <p
                                                         className={cn(
                                                             'text-xs tabular-nums',
@@ -249,21 +245,33 @@ export default function ShowVendorNeed({
                                                         {difference > 0 ? `${formatRupiah(difference)} over` : `${formatRupiah(-difference)} under`}
                                                     </p>
                                                 </div>
-                                                <div className="text-right">
-                                                    {quote.match_score != null ? (
-                                                        <>
-                                                            <p className={cn('text-lg font-semibold tabular-nums', scoreColor(quote.match_score))}>
-                                                                {quote.match_score}
-                                                            </p>
-                                                            <p className="text-muted-foreground text-xs whitespace-nowrap">
-                                                                spec {quote.spec_score} · budget {quote.budget_score}
-                                                            </p>
-                                                        </>
-                                                    ) : (
-                                                        <p className="text-muted-foreground text-xs">Not scored</p>
+                                            </div>
+
+                                            {(quote.notes || quote.match_reason) && (
+                                                <div className="space-y-2">
+                                                    {quote.notes && <p className="text-sm leading-relaxed whitespace-pre-line">{quote.notes}</p>}
+                                                    {quote.match_reason && (
+                                                        <p className="text-muted-foreground border-l-2 pl-3 text-xs leading-relaxed italic">
+                                                            AI: {quote.match_reason}
+                                                        </p>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-1">
+                                            )}
+
+                                            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 pt-3 dark:border-white/10">
+                                                {quote.match_score != null ? (
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className={cn('text-xl font-semibold tabular-nums', scoreColor(quote.match_score))}>
+                                                            {quote.match_score}
+                                                        </span>
+                                                        <span className="text-muted-foreground text-xs whitespace-nowrap">
+                                                            match · spec {quote.spec_score} · budget {quote.budget_score}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted-foreground text-xs">Not scored</span>
+                                                )}
+                                                <div className="flex flex-wrap items-center gap-1.5">
                                                     {quote.status !== 'accepted' && (
                                                         <Button
                                                             size="sm"

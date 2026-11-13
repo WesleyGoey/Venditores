@@ -64,8 +64,6 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 
 Panitia mengunggah **proposal PDF**, lalu **Google Gemini** menyusun daftar kebutuhan vendor beserta anggarannya. Setelah itu panitia mencari vendor, membandingkan penawaran, dan memantau risiko dari **dashboard**.
 
-> 🎓 Project tugas akhir mata kuliah **Cloud Computing**, Universitas Ciputra.
->
 > 🌐 Website: **[venditores.fsd.my.id][Website-url]**
 
 

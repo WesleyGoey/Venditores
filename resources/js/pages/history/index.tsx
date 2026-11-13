@@ -77,7 +77,7 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                 <Heading title="History" description={`${events.length} events, ${totalVendors} vendors chosen.`} />
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <div className="bg-muted inline-flex rounded-lg p-1 text-sm" role="tablist">
+                    <div className="inline-flex rounded-xl border border-white/70 bg-white/40 p-1 text-sm dark:border-white/10 dark:bg-white/5" role="tablist">
                         {(
                             [
                                 ['events', 'By event'],
@@ -90,7 +90,7 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                                 role="tab"
                                 aria-selected={tab === value}
                                 onClick={() => setTab(value)}
-                                className={cn('rounded-md px-3 py-1.5 font-medium', tab === value ? 'bg-card shadow-xs' : 'text-muted-foreground')}
+                                className={cn('rounded-md px-3 py-1.5 font-medium', tab === value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground')}
                             >
                                 {label}
                             </button>
@@ -115,7 +115,7 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                     ) : (
                         <div className="space-y-4">
                             {shownEvents.map((event) => (
-                                <section key={event.id} className="bg-card rounded-lg border">
+                                <section key={event.id} className="glass rounded-2xl">
                                     <div className="flex flex-wrap items-start justify-between gap-2 border-b p-4">
                                         <div className="space-y-1">
                                             <Link href={route('events.show', event.id)} className="font-semibold hover:underline">
@@ -165,7 +165,7 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {vendors.map((entry) => (
-                            <div key={entry.name} className="bg-card space-y-3 rounded-lg border p-4">
+                            <div key={entry.name} className="glass space-y-3 rounded-2xl p-4">
                                 <div className="flex items-start justify-between gap-2">
                                     <p className="leading-tight font-semibold">{entry.name}</p>
                                     <span className="bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 text-xs">

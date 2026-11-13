@@ -24,7 +24,7 @@ const features = [
 const displayFont = { fontFamily: "'Bricolage Grotesque', 'Instrument Sans', sans-serif" };
 
 /** Frosted glass surface used across this page. */
-const glass = 'border border-white/60 bg-white/40 shadow-[0_8px_32px_rgba(23,25,29,0.08)] backdrop-blur-xl';
+const glass = 'glass';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
@@ -37,12 +37,15 @@ export default function Welcome() {
             </Head>
 
             <div className="relative min-h-screen overflow-hidden bg-[#E8EBED] text-[#17191D]">
-                {/* Color behind the glass. Without it the blur has nothing to blur. */}
-                <div aria-hidden className="pointer-events-none absolute inset-0">
-                    <div className="absolute -top-40 -left-32 size-[34rem] rounded-full bg-[#244CFF]/40 blur-3xl" />
-                    <div className="absolute top-1/3 -right-40 size-[30rem] rounded-full bg-[#17191D]/20 blur-3xl" />
-                    <div className="absolute -bottom-40 left-1/4 size-[28rem] rounded-full bg-[#244CFF]/25 blur-3xl" />
-                </div>
+                {/* Color behind the glass. Radial gradients, not blur-3xl blobs: those render with a hard clipped edge in Safari. */}
+                <div
+                    aria-hidden
+                    className="pointer-events-none fixed inset-0"
+                    style={{
+                        backgroundImage:
+                            'radial-gradient(48rem 36rem at 0% 0%, rgba(36,76,255,.38), transparent 70%), radial-gradient(40rem 32rem at 100% 40%, rgba(23,25,29,.16), transparent 70%), radial-gradient(44rem 30rem at 30% 100%, rgba(36,76,255,.22), transparent 70%)',
+                    }}
+                />
 
                 <div className="relative mx-auto max-w-5xl px-6">
                     <header className={`mt-6 flex items-center justify-between rounded-full px-5 py-3 ${glass}`}>
@@ -133,7 +136,7 @@ export default function Welcome() {
                         </section>
                     </main>
 
-                    <footer className="py-10 text-center text-sm text-[#5B616A]">Cloud Computing final project, Universitas Ciputra</footer>
+                    <footer className="py-10" />
                 </div>
             </div>
         </>
