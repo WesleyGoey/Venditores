@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Http\Controllers;
-
 
 use App\Enums\EventStatus;
 use App\Enums\ProcurementStatus;
@@ -16,14 +14,12 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-
 class DashboardController extends Controller
 {
     /**
      * Number of critical needs shown on the dashboard.
      */
     private const CRITICAL_NEEDS_LIMIT = 10;
-
 
     /**
      * Show the procurement overview for the signed-in user.
@@ -32,10 +28,8 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-
         $ownNeeds = fn (): Builder => VendorNeed::query()
             ->whereHas('event', fn (Builder $events) => $events->whereBelongsTo($user));
-
 
         $eventStatusCounts = $user->events()
             ->toBase()
@@ -43,13 +37,11 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->pluck('aggregate', 'status');
 
-
         $procurementStatusCounts = $ownNeeds()
             ->toBase()
             ->selectRaw('procurement_status, count(*) as aggregate')
             ->groupBy('procurement_status')
             ->pluck('aggregate', 'procurement_status');
-
 
         $criticalNeeds = $ownNeeds()
             ->critical()
@@ -72,7 +64,6 @@ class DashboardController extends Controller
                 ],
             ]);
 
-
         $warnings = $user->events()
             ->where('status', EventStatus::Analyzed->value)
             ->with('vendorNeeds')
@@ -88,7 +79,6 @@ class DashboardController extends Controller
             ->reject(fn (array $warning): bool => $warning['level'] === RiskLevel::Low)
             ->sortBy('days_remaining')
             ->values();
-
 
         return Inertia::render('dashboard', [
             'stats' => [

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Http\Controllers;
-
 
 use App\Enums\ProcurementStatus;
 use App\Enums\QuoteStatus;
@@ -15,11 +13,9 @@ use App\Services\MatchScoreCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 
-
 class QuoteController extends Controller
 {
     public function __construct(private MatchScoreCalculator $calculator) {}
-
 
     /**
      * Store a vendor quote for the need.
@@ -28,15 +24,12 @@ class QuoteController extends Controller
     {
         $vendorNeed->quotes()->create($request->validated());
 
-
         if (in_array($vendorNeed->procurement_status, [ProcurementStatus::Drafting, ProcurementStatus::Searching], true)) {
             $vendorNeed->update(['procurement_status' => ProcurementStatus::Quoted]);
         }
 
-
         return back()->with('success', 'Quote added.');
     }
-
 
     /**
      * Update a vendor quote.
@@ -46,28 +39,22 @@ class QuoteController extends Controller
         $quote->fill($request->validated());
         $previousStatus = $quote->getOriginal('status');
 
-
         if ($quote->isDirty('price') && $quote->spec_score !== null) {
             $quote->fill($this->calculator->calculate($quote->spec_score, $quote->price, $vendorNeed->allocated_budget));
         }
 
-
         $quote->save();
-
 
         if ($quote->wasChanged('status') && $quote->status === QuoteStatus::Accepted && ! $vendorNeed->procurement_status->isSecured()) {
             $vendorNeed->update(['procurement_status' => ProcurementStatus::Deal]);
         }
 
-
         if ($quote->wasChanged('status')) {
             $vendorNeed->stepBackAfterQuoteChange($previousStatus);
         }
 
-
         return back()->with('success', 'Quote updated.');
     }
-
 
     /**
      * Delete a vendor quote.
@@ -76,15 +63,11 @@ class QuoteController extends Controller
     {
         Gate::authorize('update', $event);
 
-
         $previousStatus = $quote->status;
-
 
         $quote->delete();
 
-
         $vendorNeed->stepBackAfterQuoteChange($previousStatus);
-
 
         return back()->with('success', 'Quote deleted.');
     }

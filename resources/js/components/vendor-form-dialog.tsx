@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatRupiah } from '@/lib/format';
-import { type RecommendedVendor } from '@/types';
-import { useForm } from '@inertiajs/react';
+import { type RecommendedVendor, type SharedData } from '@/types';
+import { useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, ReactNode, useState } from 'react';
 
 type VendorFormData = {
@@ -20,6 +21,7 @@ type VendorFormData = {
 
 /** Admin only: add or edit a recommended vendor. */
 export default function VendorFormDialog({ vendor, trigger }: { vendor?: RecommendedVendor; trigger: ReactNode }) {
+    const { vendorCategories } = usePage<SharedData>().props;
     const [open, setOpen] = useState(false);
     const isEditing = vendor !== undefined;
 
@@ -76,13 +78,18 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="vendor-category">Category</Label>
-                            <Input
-                                id="vendor-category"
-                                value={data.category}
-                                onChange={(e) => setData('category', e.target.value)}
-                                placeholder="e.g. Catering"
-                                required
-                            />
+                            <Select value={data.category} onValueChange={(category) => setData('category', category)}>
+                                <SelectTrigger id="vendor-category" aria-label="Category">
+                                    <SelectValue placeholder="Choose a category" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-72">
+                                    {vendorCategories.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <InputError message={errors.category} />
                         </div>
                     </div>

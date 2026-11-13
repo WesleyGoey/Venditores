@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Support\VendorCategories;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class RecommendedVendorRequest extends FormRequest
 {
@@ -21,7 +23,7 @@ class RecommendedVendorRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string', 'max:255'],
+            'category' => ['required', 'string', Rule::in(VendorCategories::all())],
             'description' => ['nullable', 'string', 'max:2000'],
             'contact' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'url:http,https', 'max:255'],

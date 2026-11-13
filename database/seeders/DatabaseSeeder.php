@@ -22,7 +22,9 @@ class DatabaseSeeder extends Seeder
         RecommendedVendor::insert([
             ['name' => 'Dapur Nusantara', 'category' => 'Catering', 'description' => 'Lunch boxes and buffet for 100 to 2,000 guests. Halal certified.', 'contact' => '0812-0000-0001', 'website' => null, 'price_estimate' => 45_000_000],
             ['name' => 'Grand City Convention Hall', 'category' => 'Venue', 'description' => 'Main hall for 1,000 people and 5 meeting rooms.', 'contact' => '031-000-0002', 'website' => 'https://example.com', 'price_estimate' => 40_000_000],
-            ['name' => 'Sonic Pro Audio', 'category' => 'Sound System & Lighting', 'description' => 'Line array, wireless mics, stage lighting and crew.', 'contact' => '0812-0000-0003', 'website' => null, 'price_estimate' => 35_000_000],
+            ['name' => 'Sonic Pro Audio', 'category' => 'Sound System', 'description' => 'Line array, wireless mics, stage lighting and crew.', 'contact' => '0812-0000-0003', 'website' => null, 'price_estimate' => 35_000_000],
+            ['name' => 'Lumina Stage Lighting', 'category' => 'Lighting', 'description' => 'Stage and architectural lighting with an operator on site.', 'contact' => '0812-0000-0004', 'website' => null, 'price_estimate' => 18_000_000],
+            ['name' => 'Kopi Keliling', 'category' => 'Beverages & Coffee', 'description' => 'Coffee cart and barista for events up to 1,000 guests.', 'contact' => '0812-0000-0005', 'website' => null, 'price_estimate' => 9_000_000],
         ]);
 
         $user = User::factory()->create([

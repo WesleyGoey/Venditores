@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Models;
-
 
 use App\Enums\QuoteStatus;
 use Database\Factories\QuoteFactory;
@@ -10,12 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
 class Quote extends Model
 {
     /** @use HasFactory<QuoteFactory> */
     use HasFactory;
-
 
     /**
      * The attributes that are mass assignable.
@@ -35,7 +31,6 @@ class Quote extends Model
         'matched_at',
     ];
 
-
     /**
      * Get the attributes that should be cast.
      *
@@ -52,7 +47,6 @@ class Quote extends Model
             'matched_at' => 'datetime',
         ];
     }
-
 
     /**
      * @return BelongsTo<VendorNeed, $this>

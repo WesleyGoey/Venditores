@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Database\Factories;
-
 
 use App\Enums\QuoteStatus;
 use App\Models\Quote;
 use App\Models\VendorNeed;
 use Illuminate\Database\Eloquent\Factories\Factory;
-
 
 /**
  * @extends Factory<Quote>
@@ -32,7 +29,6 @@ class QuoteFactory extends Factory
         ];
     }
 
-
     /**
      * Indicate that the quote was rejected.
      */
@@ -42,7 +38,6 @@ class QuoteFactory extends Factory
             'status' => QuoteStatus::Rejected,
         ]);
     }
-
 
     /**
      * Indicate that the quote was accepted.

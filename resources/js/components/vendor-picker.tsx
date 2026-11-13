@@ -7,19 +7,23 @@ import { cn } from '@/lib/utils';
 import { type RecommendedVendor, type UsedVendor } from '@/types';
 import { Link } from '@inertiajs/react';
 import { ExternalLink, Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
 interface VendorPickerProps {
     eventId: number;
     vendorNeedId: number;
     needCategory: string;
+    /** Listed categories that go with the need's category (same category excluded). */
+    relatedCategories: string[];
     recommended: RecommendedVendor[];
     used: UsedVendor[];
 }
 
 type Tab = 'recommended' | 'history';
 
-const ALL = 'All';
+/** Filter keys: the need's own category, every category, or one category name. */
+const SAME = '__same__';
+const ALL = '__all__';
 
 function fits(a: string, b: string): boolean {
     const x = a.trim().toLowerCase();
@@ -28,21 +32,45 @@ function fits(a: string, b: string): boolean {
     return x !== '' && y !== '' && (x.includes(y) || y.includes(x));
 }
 
+/** 0 = same category as the need, 1 = related category, 2 = anything else. */
+function rank(category: string, needCategory: string, related: string[]): 0 | 1 | 2 {
+    if (fits(category, needCategory)) {
+        return 0;
+    }
+
+    return related.some((name) => fits(category, name)) ? 1 : 2;
+}
+
 /** Pick a vendor the admin recommends, or one you used before, and add it as a quote. */
-export default function VendorPicker({ eventId, vendorNeedId, needCategory, recommended, used }: VendorPickerProps) {
+export default function VendorPicker({ eventId, vendorNeedId, needCategory, relatedCategories, recommended, used }: VendorPickerProps) {
     const [tab, setTab] = useState<Tab>('recommended');
-    const [category, setCategory] = useState<string>(() => recommended.find((vendor) => vendor.matches_need)?.category ?? ALL);
+    const [filter, setFilter] = useState<string>(SAME);
 
-    const categories = useMemo(() => {
-        const names = (tab === 'recommended' ? recommended : used).map((item) => item.category);
+    // Chips: the same category first, then related ones, then the rest, then everything.
+    const chips = useMemo(() => {
+        const names = Array.from(new Set((tab === 'recommended' ? recommended : used).map((item) => item.category)));
+        const others = names.filter((name) => rank(name, needCategory, relatedCategories) > 0);
+        const sorted = others.sort(
+            (a, b) => rank(a, needCategory, relatedCategories) - rank(b, needCategory, relatedCategories) || a.localeCompare(b),
+        );
 
-        return [ALL, ...Array.from(new Set(names))];
-    }, [tab, recommended, used]);
+        return [
+            { key: SAME, label: needCategory, group: 'Same' },
+            ...sorted.map((name) => ({
+                key: name,
+                label: name,
+                group: rank(name, needCategory, relatedCategories) === 1 ? 'Related' : 'Other',
+            })),
+            { key: ALL, label: 'All', group: '' },
+        ];
+    }, [tab, recommended, used, needCategory, relatedCategories]);
+
+    const keep = (category: string) =>
+        filter === ALL || (filter === SAME ? rank(category, needCategory, relatedCategories) === 0 : category === filter);
 
     const changeTab = (next: Tab) => {
         setTab(next);
-        const names = (next === 'recommended' ? recommended : used).map((item) => item.category);
-        setCategory(names.find((name) => fits(name, needCategory)) ?? ALL);
+        setFilter(SAME);
     };
 
     const quoteTrigger = (
@@ -52,8 +80,8 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, reco
         </Button>
     );
 
-    const shownRecommended = recommended.filter((vendor) => category === ALL || vendor.category === category);
-    const shownUsed = used.filter((vendor) => category === ALL || vendor.category === category);
+    const shownRecommended = recommended.filter((vendor) => keep(vendor.category));
+    const shownUsed = used.filter((vendor) => keep(vendor.category));
     const empty = tab === 'recommended' ? shownRecommended.length === 0 : shownUsed.length === 0;
 
     return (
@@ -84,29 +112,31 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, reco
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
-                {categories.length > 2 && (
-                    <div className="flex flex-wrap gap-1.5" aria-label="Filter by category">
-                        {categories.map((name) => (
+                <div className="flex flex-wrap items-center gap-1.5" aria-label="Filter by category">
+                    {chips.map((chip, index) => (
+                        <Fragment key={chip.key}>
+                            {chip.group && chip.group !== chips[index - 1]?.group && (
+                                <span className="text-muted-foreground ml-2 text-xs first:ml-0">{chip.group}:</span>
+                            )}
                             <button
-                                key={name}
                                 type="button"
-                                onClick={() => setCategory(name)}
-                                aria-pressed={category === name}
+                                onClick={() => setFilter(chip.key)}
+                                aria-pressed={filter === chip.key}
                                 className={cn(
                                     'rounded-full border px-3 py-1 text-xs font-medium',
-                                    category === name ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-muted',
+                                    filter === chip.key ? 'border-primary bg-primary text-primary-foreground' : 'hover:bg-muted',
                                 )}
                             >
-                                {name}
+                                {chip.label}
                             </button>
-                        ))}
-                    </div>
-                )}
+                        </Fragment>
+                    ))}
+                </div>
 
                 {empty ? (
                     <p className="text-muted-foreground text-sm">
                         {tab === 'recommended'
-                            ? 'No recommended vendors in this category yet.'
+                            ? 'No recommended vendors in this category yet. Check the related categories.'
                             : 'No vendors used before. Vendors you choose in an event show up here.'}
                     </p>
                 ) : tab === 'recommended' ? (

@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Models\RecommendedVendor;
 use App\Models\VendorNeed;
 use App\Services\VendorHistory;
+use App\Support\VendorCategories;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -49,6 +50,7 @@ class VendorNeedController extends Controller
                     'reviews_count' => $vendor->reviews_count,
                     'matches_need' => $vendor->matchesCategory($vendorNeed->category),
                 ]),
+            'relatedCategories' => VendorCategories::relatedTo($vendorNeed->category),
             'usedVendors' => $history->vendorsUsedBy($request->user(), $vendorNeed->id),
             'procurementStatuses' => array_map(
                 fn (ProcurementStatus $status): array => ['value' => $status->value, 'label' => $status->label()],

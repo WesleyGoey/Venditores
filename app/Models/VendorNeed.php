@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Models;
-
 
 use App\Enums\ProcurementStatus;
 use App\Enums\QuoteStatus;
@@ -13,12 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 class VendorNeed extends Model
 {
     /** @use HasFactory<VendorNeedFactory> */
     use HasFactory;
-
 
     /**
      * The attributes that are mass assignable.
@@ -33,7 +29,6 @@ class VendorNeed extends Model
         'is_vital',
         'procurement_status',
     ];
-
 
     /**
      * Get the attributes that should be cast.
@@ -50,7 +45,6 @@ class VendorNeed extends Model
         ];
     }
 
-
     /**
      * @return BelongsTo<Event, $this>
      */
@@ -59,7 +53,6 @@ class VendorNeed extends Model
         return $this->belongsTo(Event::class);
     }
 
-
     /**
      * @return HasMany<Quote, $this>
      */
@@ -67,7 +60,6 @@ class VendorNeed extends Model
     {
         return $this->hasMany(Quote::class);
     }
-
 
     /**
      * Keep the procurement status in step after a quote was changed or deleted.

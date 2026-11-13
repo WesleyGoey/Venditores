@@ -7,6 +7,7 @@ use App\Enums\ProcurementStatus;
 use App\Exceptions\GeminiException;
 use App\Models\Event;
 use App\Services\BudgetAllocator;
+use App\Support\VendorCategories;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -85,6 +86,8 @@ class ProposalAnalyzer
 
     private function prompt(Event $event): string
     {
+        $categories = implode(', ', VendorCategories::all());
+
         return <<<PROMPT
         Analyse the attached event proposal.
 
@@ -97,7 +100,7 @@ class ProposalAnalyzer
         Tasks:
         1. Summarise the event profile (purpose, audience, format) in 2-4 sentences.
         2. Classify the event scale as "small" (< 100 attendees), "medium" (100-1000) or "large" (> 1000) and estimate the number of attendees.
-        3. List every vendor category the committee needs to hire (for example venue, catering, sound system, lighting, decoration, documentation, security, printing, talent, transport). Do not miss crucial categories.
+        3. List every vendor category the committee needs to hire. Use one of these exact names when it fits: {$categories}. Only invent a short name when none fits. Do not miss crucial categories.
         4. For each category write a concise technical specification draft (quantities, duration, quality standard) based on the proposal.
         5. For each category give allocation_percentage: the ideal share of the total budget as a percentage. The percentages of all categories must add up to 100.
         6. Mark is_vital true when the event cannot run without that vendor.
