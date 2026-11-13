@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T13:20:00Z",
+  "title": "Design System: Venditores",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#e8ebed", "tonalRamp": ["#17191d", "#2c3037", "#5b616a", "#9aa1aa", "#c3c9ce", "#d1d6da", "#e8ebed", "#f4f6f7"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#17191d", "tonalRamp": ["#0b0c0e", "#17191d", "#262a30", "#3d434b", "#5b616a", "#8f96a0", "#c3c9ce", "#e8ebed"] },
+      "live-blue": { "role": "primary", "displayName": "Live Blue", "canonical": "#244cff", "tonalRamp": ["#0b1a66", "#10268f", "#1b3be0", "#244cff", "#4d6bff", "#6f86ff", "#aebbff", "#e0e5ff"] },
+      "slate": { "role": "neutral", "displayName": "Slate", "canonical": "#5b616a", "tonalRamp": ["#1e2126", "#2c3037", "#3d434b", "#5b616a", "#7a818a", "#9aa1aa", "#c3c9ce", "#e8ebed"] },
+      "over-budget": { "role": "semantic", "displayName": "Over Budget Red", "canonical": "#b42318", "tonalRamp": ["#55120c", "#7a1a10", "#b42318", "#d92d20", "#f0584b", "#f6948b", "#fbc9c4", "#fdeceb"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The sheet H1 only." },
+      "headline": { "displayName": "Headline", "purpose": "Section H2s and step verbs." },
+      "title": { "displayName": "Title", "purpose": "Row names, Total label." },
+      "body": { "displayName": "Body", "purpose": "Landing paragraphs, 28rem measure." },
+      "label": { "displayName": "Label", "purpose": "Column headers, status words, source line; tabular figures." }
+    },
+    "shadows": [
+      { "name": "glass", "value": "0 8px 32px rgb(23 25 29 / 0.08)", "purpose": "Every .glass surface; dark theme 0 8px 32px rgb(0 0 0 / 0.35)." },
+      { "name": "cta-glow", "value": "0 8px 24px rgba(36, 76, 255, 0.35)", "purpose": "Large primary buttons only." }
+    ],
+    "motion": [
+      { "name": "ease-settle", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "All entry animations." },
+      { "name": "rab-row", "value": "0.6s, delay calc(i * 160ms + 300ms)", "purpose": "Row lands with a 6px rise and a blue 14% cell flash." },
+      { "name": "rab-bar", "value": "0.7s, delay calc(i * 160ms + 400ms)", "purpose": "Share bar draws in from the left." },
+      { "name": "row-expand", "value": "300ms ease-out grid-template-rows", "purpose": "Offers panel opens under a row." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Pill call to action in Live Blue with glow.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Get started</a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 9999px; background: #244cff; color: #fff; font: 500 16px 'Onest', system-ui, sans-serif; text-decoration: none; box-shadow: 0 8px 24px rgba(36,76,255,0.35); transition: background-color .15s; } .ds-btn-primary:hover { background: #1b3be0; } .ds-btn-primary:focus-visible { outline: 2px solid #244cff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Frosted secondary pill beside the primary action.",
+      "html": "<a class=\"ds-btn-outline\" href=\"#\">Log in</a>",
+      "css": ".ds-btn-outline { display: inline-flex; padding: 14px 28px; border-radius: 9999px; border: 1px solid rgb(255 255 255 / 0.7); background: rgb(255 255 255 / 0.5); color: #17191d; font: 500 16px 'Onest', system-ui, sans-serif; text-decoration: none; transition: background-color .15s; } .ds-btn-outline:hover { background: rgb(255 255 255 / 0.8); } .ds-btn-outline:focus-visible { outline: 2px solid #244cff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The frosted surface shared by app cards and the landing sheet.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-title\">Catering</p><p class=\"ds-card-body\">Rp42.000.000</p></div>",
+      "css": ".ds-card { padding: 24px; border-radius: 16px; background: rgb(255 255 255 / 0.5); border: 1px solid rgb(255 255 255 / 0.7); box-shadow: 0 8px 32px rgb(23 25 29 / 0.08); backdrop-filter: blur(20px) saturate(1.4); color: #17191d; font-family: 'Onest', system-ui, sans-serif; } .ds-card-title { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.025em; } .ds-card-body { margin: 6px 0 0; color: #5b616a; font-size: 14px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Nav Pill",
+      "kind": "nav",
+      "refersTo": "sheet",
+      "description": "Sticky glass pill: logo, centered links, auth actions.",
+      "html": "<header class=\"ds-nav\"><strong class=\"ds-nav-logo\">Venditores</strong><nav><a href=\"#\">Example</a><a href=\"#\">How it works</a></nav><a class=\"ds-nav-cta\" href=\"#\">Sign up</a></header>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 20px; border-radius: 9999px; background: rgb(255 255 255 / 0.5); border: 1px solid rgb(255 255 255 / 0.7); box-shadow: 0 8px 32px rgb(23 25 29 / 0.08); backdrop-filter: blur(20px) saturate(1.4); font: 500 14px 'Onest', system-ui, sans-serif; color: #3d434b; } .ds-nav-logo { font-family: 'Bricolage Grotesque', sans-serif; color: #17191d; } .ds-nav nav { display: flex; gap: 4px; } .ds-nav nav a { padding: 6px 16px; border-radius: 9999px; color: inherit; text-decoration: none; } .ds-nav nav a:hover { background: rgb(255 255 255 / 0.7); color: #17191d; } .ds-nav-cta { padding: 6px 16px; border-radius: 9999px; background: #244cff; color: #fff; text-decoration: none; } .ds-nav-cta:hover { background: #1b3be0; }"
+    },
+    {
+      "name": "Need Row",
+      "kind": "custom",
+      "refersTo": "sheet",
+      "description": "Ruled sheet row: dot, name, amount, share bar, status mark.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-name\"><i class=\"ds-dot\"></i>Catering</span><span class=\"ds-amt\">Rp42.000.000</span><span class=\"ds-bar\"><b></b></span><span class=\"ds-status\"><i class=\"ds-ring\"><u></u></i>Comparing</span></div>",
+      "css": ".ds-row { display: grid; grid-template-columns: 1.4fr 1.2fr 1.4fr 1fr; align-items: center; gap: 24px; padding: 16px 32px; border-top: 1px solid rgb(23 25 29 / 0.1); font: 400 16px 'Onest', system-ui, sans-serif; color: #17191d; } .ds-row:hover { background: rgb(255 255 255 / 0.5); } .ds-name { display: flex; align-items: center; gap: 12px; font-weight: 600; } .ds-dot { width: 10px; height: 10px; border-radius: 9999px; background: #17191d; } .ds-amt { font-weight: 500; font-variant-numeric: tabular-nums; } .ds-bar { height: 6px; border-radius: 9999px; background: rgb(23 25 29 / 0.1); overflow: hidden; } .ds-bar b { display: block; width: 28%; height: 100%; border-radius: 9999px; background: #17191d; } .ds-status { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #244cff; } .ds-ring { width: 20px; height: 20px; border: 2px solid #244cff; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; } .ds-ring u { width: 6px; height: 6px; border-radius: 9999px; background: #244cff; }"
+    },
+    {
+      "name": "Best Badge",
+      "kind": "chip",
+      "refersTo": "best-badge",
+      "description": "Marks the top-scored offer.",
+      "html": "<span class=\"ds-badge\">Best</span>",
+      "css": ".ds-badge { display: inline-flex; padding: 2px 8px; border-radius: 9999px; background: #244cff; color: #fff; font: 500 12px 'Onest', system-ui, sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The RAB Sheet",
+    "overview": "Venditores is the committee's own RAB (rencana anggaran biaya, the event budget sheet), already filled in. The landing page is that sheet: one large frosted glass panel with hairline ruled rows, a column header, a total row, and a closing approval block with Prepared by and Approved by lines. The in-app screens share the same palette and glass; the landing is the Persuade surface of that one system. The app screens were not redesigned in this run, so they carry the same tokens but not the sheet composition.",
+    "keyCharacteristics": [
+      "One frosted glass sheet is the page; rows are hairline ruled, never carded.",
+      "Blue (#244CFF) is the live or active mark and the primary action, nothing decorative.",
+      "Display in Bricolage Grotesque, body and numerals in Onest with tabular figures.",
+      "Rows land one by one with a brief blue cell highlight; share bars draw in.",
+      "Light-only on the landing; the app has a dark theme through CSS variables."
+    ],
+    "rules": [
+      { "name": "The One Live Mark Rule", "body": "Blue means live, active or actionable. It never decorates a heading, an icon set or a surface fill.", "section": "colors" },
+      { "name": "The Mark-Not-Hue Rule", "body": "Row state is carried by a shape (check, ring, dash) plus a word. Do not add a status color per state.", "section": "colors" },
+      { "name": "The Tint Rule", "body": "No new hue enters the system; extend with tints of paper, ink and blue.", "section": "colors" },
+      { "name": "The Tabular Rupiah Rule", "body": "Every amount, share and score uses tabular-nums; totals and scores set in the display face.", "section": "typography" },
+      { "name": "The Verb Ledger Rule", "body": "Steps are large display verbs (Upload, Choose, Compare) with a small object line, in a ruled two-column ledger.", "section": "typography" },
+      { "name": "The Frost Once Rule", "body": "One glass layer per region. Nested wells use white overlay and a hairline, never another blur.", "section": "elevation" },
+      { "name": "The Mesh Rule", "body": "Color lives behind the glass as radial gradients (never blurred blobs, which tile-edge in Safari).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep blue (#244CFF) to the primary action, focus, live marks and the Best badge.",
+      "Do show state as a mark plus a word (check Locked, ring Comparing, dash Not started).",
+      "Do set money, shares and scores in tabular-nums and align them in one shared grid.",
+      "Do build new surfaces from `.glass` over the mesh, with hairline rules at Ink 10% between rows.",
+      "Do honor `prefers-reduced-motion` by showing the finished state.",
+      "Do label example data as example on the page."
+    ],
+    "donts": [
+      "Don't card the steps or rows; use ruled ledger rows inside a sheet.",
+      "Don't add a status hue per state or a second accent color.",
+      "Don't nest blur: wells inside glass use white overlay and a border.",
+      "Don't use blurred-blob backgrounds; use radial gradients.",
+      "Don't let the landing's hardcoded hex diverge further from the CSS variables."
+    ]
+  }
+}

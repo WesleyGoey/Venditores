@@ -58,6 +58,7 @@ class VendorCategories
         'Tent & Canopy',
         'Air Conditioning',
         'Toilet Rental',
+        'Other',
     ];
 
     /**
