@@ -78,46 +78,46 @@
 }
 
 :root {
-    /* Palette: #E8EBED paper, #17191D ink, #244CFF blue. Everything else is a tint of these. */
-    --background: #e8ebed;
-    --foreground: #17191d;
-    --card: #f4f6f7;
-    --card-foreground: #17191d;
-    --popover: rgb(250 251 252 / 0.9);
-    --popover-foreground: #17191d;
+    /* Palette: cream paper, warm espresso ink, cobalt blue. Apricot and sand are cream-family tints used behind the glass. */
+    --background: #f3ebdc;
+    --foreground: #261f17;
+    --card: #faf5ea;
+    --card-foreground: #261f17;
+    --popover: rgb(252 248 239 / 0.92);
+    --popover-foreground: #261f17;
     --primary: #244cff;
     --primary-foreground: #ffffff;
-    --secondary: #dde1e4;
-    --secondary-foreground: #17191d;
-    --muted: #dde1e4;
-    --muted-foreground: #5b616a;
-    --accent: #dde1e4;
-    --accent-foreground: #17191d;
+    --secondary: #ebe1ce;
+    --secondary-foreground: #261f17;
+    --muted: #ebe1ce;
+    --muted-foreground: #6b5f50;
+    --accent: #ebe1ce;
+    --accent-foreground: #261f17;
     --destructive: #d92d20;
     --destructive-foreground: #ffffff;
-    --border: #d1d6da;
-    --input: #c3c9ce;
+    --border: #ddd0b7;
+    --input: #d3c4a8;
     --ring: #244cff;
     --chart-1: #244cff;
-    --chart-2: #17191d;
-    --chart-3: #5b616a;
-    --chart-4: #8f96a0;
+    --chart-2: #261f17;
+    --chart-3: #6b5f50;
+    --chart-4: #a39580;
     --chart-5: #d92d20;
     --radius: 0.5rem;
     --sidebar-background: transparent;
-    --sidebar-foreground: #17191d;
+    --sidebar-foreground: #261f17;
     --sidebar-primary: #244cff;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: rgb(255 255 255 / 0.65);
-    --sidebar-accent-foreground: #17191d;
-    --sidebar-border: rgb(23 25 29 / 0.08);
+    --sidebar-accent: rgb(255 253 247 / 0.65);
+    --sidebar-accent-foreground: #261f17;
+    --sidebar-border: rgb(38 31 23 / 0.09);
     --sidebar-ring: #244cff;
-    --glass: rgb(255 255 255 / 0.5);
-    --glass-border: rgb(255 255 255 / 0.7);
-    --glass-shadow: 0 8px 32px rgb(23 25 29 / 0.08);
-    --mesh-a: rgb(36 76 255 / 0.22);
-    --mesh-b: rgb(23 25 29 / 0.1);
-    --mesh-c: rgb(36 76 255 / 0.14);
+    --glass: rgb(255 252 245 / 0.52);
+    --glass-border: rgb(255 253 248 / 0.75);
+    --glass-shadow: 0 10px 40px rgb(92 64 24 / 0.1), inset 0 1px 0 rgb(255 255 255 / 0.7);
+    --mesh-a: rgb(240 168 96 / 0.34);
+    --mesh-b: rgb(36 76 255 / 0.14);
+    --mesh-c: rgb(214 186 140 / 0.4);
 }
 
 .dark {
@@ -211,7 +211,7 @@
     from {
         opacity: 0;
         transform: translateY(6px);
-        background-color: rgb(36 76 255 / 0.14);
+        background-color: rgb(36 76 255 / 0.12);
     }
     to {
         opacity: 1;
@@ -248,6 +248,56 @@
     .budget-split,
     .rab-row,
     .rab-bar {
+        animation: none;
+    }
+}
+
+/* Landing: orbs sit behind the glass so it has something to refract. Slow drift, transform only. */
+@keyframes drift {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        transform: translate3d(2.5rem, -2rem, 0);
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.orb {
+    animation: drift 18s ease-in-out infinite;
+}
+
+.rise {
+    animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--d, 0) * 100ms);
+}
+
+/* Fine film grain over the landing so flat cream does not read as a plain fill. */
+.grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .16 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .orb,
+    .rise {
         animation: none;
     }
 }
