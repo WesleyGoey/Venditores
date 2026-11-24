@@ -8,6 +8,7 @@ use App\Enums\QuoteStatus;
 use App\Models\RecommendedVendor;
 use App\Models\User;
 use App\Services\BudgetAllocator;
+use App\Services\SupabaseAuth;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,7 +16,7 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database with a demo account and event.
      */
-    public function run(BudgetAllocator $allocator): void
+    public function run(BudgetAllocator $allocator, SupabaseAuth $supabase): void
     {
         $this->call(AdminSeeder::class);
 
@@ -31,6 +32,9 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Null when the account already exists in Supabase; the first login links it.
+        $user->forceFill(['supabase_id' => $supabase->createUser($user->email, 'password', $user->name)])->save();
 
         $event = $user->events()->create([
             'name' => 'Nusantara Tech Fest 2027',
