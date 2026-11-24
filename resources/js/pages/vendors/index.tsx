@@ -30,6 +30,8 @@ interface UserVendor {
     event: string;
     user: string;
     status: QuoteStatus;
+    rating: number | null;
+    reviews_count: number;
 }
 
 interface VendorsIndexProps {
@@ -275,6 +277,7 @@ export default function VendorsIndex({ vendors, userVendors }: VendorsIndexProps
                                             <td className="px-4 py-3 align-top">
                                                 <p className="font-medium">{vendor.name}</p>
                                                 {vendor.contact && <p className="text-muted-foreground text-xs">{vendor.contact}</p>}
+                                                <RatingSummary rating={vendor.rating} count={vendor.reviews_count} />
                                             </td>
                                             <td className="px-2 py-3 align-top">{vendor.category}</td>
                                             <td className="px-2 py-3 text-right align-top whitespace-nowrap tabular-nums">

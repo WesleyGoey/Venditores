@@ -9,10 +9,12 @@ use App\Http\Requests\UpdateVendorNeedRequest;
 use App\Models\Event;
 use App\Models\RecommendedVendor;
 use App\Models\VendorNeed;
+use App\Models\VendorReview;
 use App\Services\VendorHistory;
 use App\Support\VendorCategories;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,10 +28,11 @@ class VendorNeedController extends Controller
     {
         Gate::authorize('view', $event);
 
-        $vendorNeed->load(['quotes' => fn ($query) => $query
-            ->orderByRaw('match_score is null')
-            ->orderByDesc('match_score')
-            ->orderBy('price'),
+        $vendorNeed->load([
+            'quotes' => fn($query) => $query
+                ->orderByRaw('match_score is null')
+                ->orderByDesc('match_score')
+                ->orderBy('price'),
         ]);
 
         return Inertia::render('vendor-needs/show', [
@@ -44,20 +47,20 @@ class VendorNeedController extends Controller
                 ->orderByRaw('lower(category)')
                 ->orderBy('name')
                 ->get()
-                ->map(fn (RecommendedVendor $vendor): array => [
+                ->map(fn(RecommendedVendor $vendor): array => [
                     ...$vendor->only(['id', 'name', 'category', 'description', 'contact', 'website', 'price_estimate']),
                     'rating' => $vendor->reviews_avg_rating !== null ? round((float) $vendor->reviews_avg_rating, 1) : null,
                     'reviews_count' => $vendor->reviews_count,
-                    'matches_need' => $vendor->matchesCategory($vendorNeed->category),
+                    'matches_need' => VendorCategories::sameOrRelated($vendor->category, $vendorNeed->category),
                 ]),
             'relatedCategories' => VendorCategories::relatedTo($vendorNeed->category),
-            'usedVendors' => $history->vendorsUsedBy($request->user(), $vendorNeed->id),
+            'usedVendors' => $this->usedVendors($history->vendorsUsedBy($request->user(), $vendorNeed->id), $vendorNeed),
             'procurementStatuses' => array_map(
-                fn (ProcurementStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
+                fn(ProcurementStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
                 ProcurementStatus::cases(),
             ),
             'quoteStatuses' => array_map(
-                fn (QuoteStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
+                fn(QuoteStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
                 QuoteStatus::cases(),
             ),
         ]);
@@ -99,5 +102,23 @@ class VendorNeedController extends Controller
         $vendorNeed->delete();
 
         return to_route('events.show', $event)->with('success', 'Vendor need deleted.');
+    }
+
+    /**
+     * Vendors the user chose before, with their rating and whether they fit this need.
+     *
+     * @param  Collection<int, array<string, mixed>>  $vendors
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function usedVendors(Collection $vendors, VendorNeed $vendorNeed): Collection
+    {
+        $reviews = VendorReview::summariesFor($vendors->pluck('name'));
+
+        return $vendors->map(fn(array $vendor): array => [
+            ...$vendor,
+            'matches_need' => VendorCategories::sameOrRelated($vendor['category'], $vendorNeed->category),
+            'rating' => $reviews[VendorReview::keyFor($vendor['name'])]['rating'] ?? null,
+            'reviews_count' => $reviews[VendorReview::keyFor($vendor['name'])]['reviews_count'] ?? 0,
+        ]);
     }
 }

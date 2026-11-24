@@ -6,9 +6,10 @@ use App\Models\Quote;
 use App\Models\RecommendedVendor;
 use App\Models\User;
 use App\Models\VendorNeed;
+use App\Models\VendorReview;
 use Inertia\Testing\AssertableInertia as Assert;
 
-$vendorData = fn (array $overrides = []): array => [
+$vendorData = fn(array $overrides = []): array => [
     'name' => 'Dapur Nusantara',
     'category' => 'Catering',
     'description' => 'Lunch boxes and buffet.',
@@ -31,7 +32,7 @@ describe('directory', function () {
 
         $this->actingAs(User::factory()->create())
             ->get(route('vendors.index'))
-            ->assertInertia(fn (Assert $page) => $page
+            ->assertInertia(fn(Assert $page) => $page
                 ->component('vendors/index')
                 ->has('vendors', 1)
                 ->where('vendors.0.rating', 4.5)
@@ -46,7 +47,7 @@ describe('directory', function () {
 
         $this->actingAs(User::factory()->admin()->create())
             ->get(route('vendors.index'))
-            ->assertInertia(fn (Assert $page) => $page
+            ->assertInertia(fn(Assert $page) => $page
                 ->has('vendors', 1)
                 ->has('userVendors', 1)
                 ->where('userVendors.0.name', 'User Added Hall')
@@ -133,12 +134,12 @@ describe('picking a vendor on a vendor need', function () {
 
         $this->actingAs($need->event->user)
             ->get(route('events.vendor-needs.show', [$need->event, $need]))
-            ->assertInertia(fn (Assert $page) => $page
+            ->assertInertia(fn(Assert $page) => $page
                 ->has('recommendedVendors', 2)
                 ->where('recommendedVendors.0.name', 'Match')
                 ->where('recommendedVendors.0.matches_need', true)
                 ->where('recommendedVendors.1.matches_need', false)
-                ->where('relatedCategories', fn ($related) => collect($related)->contains('Beverages & Coffee') && ! collect($related)->contains('Catering')));
+                ->where('relatedCategories', fn($related) => collect($related)->contains('Beverages & Coffee') && ! collect($related)->contains('Catering')));
     });
 
     test('vendors the user chose before are offered again, once each and only their own', function () {
@@ -154,11 +155,87 @@ describe('picking a vendor on a vendor need', function () {
 
         $this->actingAs($user)
             ->get(route('events.vendor-needs.show', [$thisNeed->event, $thisNeed]))
-            ->assertInertia(fn (Assert $page) => $page
+            ->assertInertia(fn(Assert $page) => $page
                 ->has('usedVendors', 1)
                 ->where('usedVendors.0.name', 'Dapur A')
                 ->where('usedVendors.0.event', 'Last Year Fest')
                 ->where('usedVendors.0.price', 5_000_000));
+    });
+
+    test('vendors filed under an Indonesian category name still count as the same category', function () {
+        $user = User::factory()->create();
+        $oldNeed = VendorNeed::factory()->for(Event::factory()->for($user)->create())->create(['category' => 'Katering & Konsumsi']);
+        Quote::factory()->for($oldNeed)->create(['vendor_name' => 'AW', 'status' => QuoteStatus::Accepted]);
+        $venueNeed = VendorNeed::factory()->for(Event::factory()->for($user)->create())->create(['category' => 'Venue']);
+        Quote::factory()->for($venueNeed)->create(['vendor_name' => 'Grand Hall', 'status' => QuoteStatus::Accepted]);
+        RecommendedVendor::factory()->create(['name' => 'Dapur Nusantara', 'category' => 'Catering']);
+        $thisNeed = VendorNeed::factory()->for(Event::factory()->for($user)->create())->create(['category' => 'Catering & Konsumsi']);
+
+        $this->actingAs($user)
+            ->get(route('events.vendor-needs.show', [$thisNeed->event, $thisNeed]))
+            ->assertInertia(fn(Assert $page) => $page
+                ->where('recommendedVendors.0.matches_need', true)
+                ->where('usedVendors', fn($used) => collect($used)->firstWhere('name', 'AW')['matches_need'] === true
+                    && collect($used)->firstWhere('name', 'Grand Hall')['matches_need'] === false));
+    });
+});
+
+describe('reviewing a vendor the user entered themselves', function () {
+    function chosenVendor(string $name): User
+    {
+        $user = User::factory()->create();
+        $need = VendorNeed::factory()->for(Event::factory()->for($user)->create())->create(['category' => 'Katering & Konsumsi']);
+        Quote::factory()->for($need)->create(['vendor_name' => $name, 'status' => QuoteStatus::Accepted]);
+
+        return $user;
+    }
+
+    test('a user can review a vendor they chose and sees it in history and when picking vendors', function () {
+        $user = chosenVendor('AW Catering');
+
+        $this->actingAs($user)
+            ->put(route('vendor-reviews.store'), ['name' => 'aw catering ', 'rating' => 4, 'comment' => 'On time'])
+            ->assertSessionHas('success');
+
+        $review = VendorReview::sole();
+        expect($review->vendor_name)->toBe('aw catering')
+            ->and($review->recommended_vendor_id)->toBeNull();
+
+        $this->actingAs($user)->get(route('history'))->assertInertia(fn(Assert $page) => $page
+            ->where('reviews.aw catering.rating', 4)
+            ->where('reviews.aw catering.my_review.comment', 'On time'));
+
+        $need = VendorNeed::factory()->for(Event::factory()->for($user)->create())->create(['category' => 'Catering']);
+        $this->actingAs($user)->get(route('events.vendor-needs.show', [$need->event, $need]))->assertInertia(fn(Assert $page) => $page
+            ->where('usedVendors.0.rating', 4)
+            ->where('usedVendors.0.reviews_count', 1));
+    });
+
+    test('a review by name of a recommended vendor goes to that vendor', function () {
+        $user = chosenVendor('Dapur Nusantara');
+        $vendor = RecommendedVendor::factory()->create(['name' => 'Dapur Nusantara']);
+
+        $this->actingAs($user)->put(route('vendor-reviews.store'), ['name' => 'Dapur Nusantara', 'rating' => 5]);
+
+        expect($vendor->reviews()->pluck('rating')->all())->toBe([5])
+            ->and(VendorReview::whereNotNull('vendor_name')->count())->toBe(0);
+    });
+
+    test('a user cannot review a vendor they never chose', function () {
+        $this->actingAs(chosenVendor('AW Catering'))
+            ->put(route('vendor-reviews.store'), ['name' => 'Someone Else', 'rating' => 1])
+            ->assertForbidden();
+
+        expect(VendorReview::count())->toBe(0);
+    });
+
+    test('a user can delete their review of a vendor they entered', function () {
+        $user = chosenVendor('AW Catering');
+        $this->actingAs($user)->put(route('vendor-reviews.store'), ['name' => 'AW Catering', 'rating' => 3]);
+
+        $this->actingAs($user)->delete(route('vendor-reviews.destroy'), ['name' => 'AW Catering'])->assertSessionHas('success');
+
+        expect(VendorReview::count())->toBe(0);
     });
 });
 
@@ -190,7 +267,7 @@ describe('history', function () {
 
         $this->actingAs($user)
             ->get(route('history'))
-            ->assertInertia(fn (Assert $page) => $page
+            ->assertInertia(fn(Assert $page) => $page
                 ->component('history/index')
                 ->has('events', 2)
                 ->where('events.0.name', 'Tech Fest')

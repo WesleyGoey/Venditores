@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RecommendedVendorRequest;
 use App\Models\Quote;
 use App\Models\RecommendedVendor;
+use App\Models\VendorReview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,21 +28,21 @@ class VendorController extends Controller
         $vendors = RecommendedVendor::query()
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
-            ->with(['reviews' => fn ($reviews) => $reviews
+            ->with(['reviews' => fn($reviews) => $reviews
                 ->with('user:id,name')
                 ->latest()
                 ->limit(self::REVIEWS_SHOWN)])
             ->orderByRaw('lower(category)')
             ->orderBy('name')
             ->get()
-            ->map(fn (RecommendedVendor $vendor): array => [
+            ->map(fn(RecommendedVendor $vendor): array => [
                 ...$vendor->only(['id', 'name', 'category', 'description', 'contact', 'website', 'price_estimate']),
                 'rating' => $vendor->reviews_avg_rating !== null ? round((float) $vendor->reviews_avg_rating, 1) : null,
                 'reviews_count' => $vendor->reviews_count,
                 'my_review' => $vendor->reviews
                     ->firstWhere('user_id', $user->id)
                     ?->only(['rating', 'comment']),
-                'reviews' => $vendor->reviews->map(fn ($review): array => [
+                'reviews' => $vendor->reviews->map(fn($review): array => [
                     'id' => $review->id,
                     'user' => $review->user->name,
                     'rating' => $review->rating,
@@ -83,12 +84,18 @@ class VendorController extends Controller
      */
     private function userVendors(): array
     {
-        return Quote::query()
+        $quotes = Quote::query()
             ->with('vendorNeed.event.user:id,name')
             ->latest()
             ->limit(self::USER_VENDORS_SHOWN)
-            ->get()
-            ->map(fn (Quote $quote): array => [
+            ->get();
+
+        $reviews = VendorReview::summariesFor($quotes->pluck('vendor_name'));
+
+        return $quotes
+            ->map(fn(Quote $quote): array => [
+                'rating' => $reviews[VendorReview::keyFor($quote->vendor_name)]['rating'] ?? null,
+                'reviews_count' => $reviews[VendorReview::keyFor($quote->vendor_name)]['reviews_count'] ?? 0,
                 'id' => $quote->id,
                 'name' => $quote->vendor_name,
                 'contact' => $quote->vendor_contact,

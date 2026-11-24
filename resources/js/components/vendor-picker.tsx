@@ -59,17 +59,8 @@ function matchesQuery(query: string, ...fields: (string | null)[]): boolean {
     return needle === '' || fields.some((field) => field?.toLowerCase().includes(needle));
 }
 
-function fits(a: string, b: string): boolean {
-    const x = a.trim().toLowerCase();
-    const y = b.trim().toLowerCase();
-
-    return x !== '' && y !== '' && (x.includes(y) || y.includes(x));
-}
-
-/** True when the category is the need's own or one that goes with it (e.g. Catering and Consumption). */
-function isSame(category: string, needCategory: string, related: string[]): boolean {
-    return fits(category, needCategory) || related.some((name) => fits(category, name));
-}
+/** The server decides whether a vendor's category is the need's own or one that goes with it, Indonesian names included. */
+const isSame = (vendor: { matches_need?: boolean }): boolean => vendor.matches_need === true;
 
 interface VendorCardProps {
     eventId: number;
@@ -130,14 +121,14 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
     const [recommendedSort, setRecommendedSort] = useState<VendorSort>('rating_desc');
     const [usedOrder, setUsedOrder] = useState<UsedSort>('recent');
 
-    const keep = (category: string) => isSame(category, needCategory, relatedCategories) === (filter === 'same');
+    const keep = (vendor: { matches_need?: boolean }) => isSame(vendor) === (filter === 'same');
 
     const shownRecommended = sortVendors(
-        recommended.filter((vendor) => keep(vendor.category) && matchesQuery(query, vendor.name, vendor.description, vendor.category)),
+        recommended.filter((vendor) => keep(vendor) && matchesQuery(query, vendor.name, vendor.description, vendor.category)),
         recommendedSort,
     );
     const shownUsed = sortUsed(
-        used.filter((vendor) => keep(vendor.category) && matchesQuery(query, vendor.name, vendor.category, vendor.event)),
+        used.filter((vendor) => keep(vendor) && matchesQuery(query, vendor.name, vendor.category, vendor.event)),
         usedOrder,
     );
     const total = tab === 'recommended' ? shownRecommended.length : shownUsed.length;
@@ -145,8 +136,7 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
     const current = Math.min(page, pages);
     const slice = <T,>(items: T[]) => items.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
-    const count = (items: { category: string }[], want: Filter) =>
-        items.filter((item) => isSame(item.category, needCategory, relatedCategories) === (want === 'same')).length;
+    const count = (items: { matches_need?: boolean }[], want: Filter) => items.filter((item) => isSame(item) === (want === 'same')).length;
     const tabItems = tab === 'recommended' ? recommended : used;
 
     const change = (next: () => void) => {
@@ -246,69 +236,70 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                                     ? 'Nothing matches your search.'
                                     : 'No recommended vendors here yet. Try the Other filter.'
                                 : query
-                                  ? 'Nothing matches your search.'
-                                  : 'No vendors used before. Vendors you choose in an event show up here.'}
+                                    ? 'Nothing matches your search.'
+                                    : 'No vendors used before. Vendors you choose in an event show up here.'}
                         </p>
                     </div>
                 ) : (
                     <ul className="grid gap-3 md:grid-cols-2">
                         {tab === 'recommended'
                             ? slice(shownRecommended).map((vendor) => (
-                                  <VendorCard
-                                      key={vendor.id}
-                                      eventId={eventId}
-                                      vendorNeedId={vendorNeedId}
-                                      name={vendor.name}
-                                      category={vendor.category}
-                                      rating={<RatingSummary rating={vendor.rating} count={vendor.reviews_count} />}
-                                      text={vendor.description}
-                                      priceLabel="Estimate"
-                                      price={vendor.price_estimate}
-                                      links={
-                                          (vendor.contact || vendor.website) && (
-                                              <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                                                  {vendor.contact && <span>{vendor.contact}</span>}
-                                                  {vendor.website && (
-                                                      <a
-                                                          href={vendor.website}
-                                                          target="_blank"
-                                                          rel="noreferrer noopener"
-                                                          className="text-primary inline-flex items-center gap-1 hover:underline"
-                                                      >
-                                                          <ExternalLink className="size-3" />
-                                                          {linkLabel(vendor.website)}
-                                                      </a>
-                                                  )}
-                                              </div>
-                                          )
-                                      }
-                                      defaults={{
-                                          vendor_name: vendor.name,
-                                          vendor_contact: [vendor.contact, vendor.website].filter(Boolean).join(' · '),
-                                          price: vendor.price_estimate !== null ? String(vendor.price_estimate) : '',
-                                          notes: vendor.description ?? '',
-                                      }}
-                                  />
-                              ))
+                                <VendorCard
+                                    key={vendor.id}
+                                    eventId={eventId}
+                                    vendorNeedId={vendorNeedId}
+                                    name={vendor.name}
+                                    category={vendor.category}
+                                    rating={<RatingSummary rating={vendor.rating} count={vendor.reviews_count} />}
+                                    text={vendor.description}
+                                    priceLabel="Estimate"
+                                    price={vendor.price_estimate}
+                                    links={
+                                        (vendor.contact || vendor.website) && (
+                                            <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                                                {vendor.contact && <span>{vendor.contact}</span>}
+                                                {vendor.website && (
+                                                    <a
+                                                        href={vendor.website}
+                                                        target="_blank"
+                                                        rel="noreferrer noopener"
+                                                        className="text-primary inline-flex items-center gap-1 hover:underline"
+                                                    >
+                                                        <ExternalLink className="size-3" />
+                                                        {linkLabel(vendor.website)}
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )
+                                    }
+                                    defaults={{
+                                        vendor_name: vendor.name,
+                                        vendor_contact: [vendor.contact, vendor.website].filter(Boolean).join(' · '),
+                                        price: vendor.price_estimate !== null ? String(vendor.price_estimate) : '',
+                                        notes: vendor.description ?? '',
+                                    }}
+                                />
+                            ))
                             : slice(shownUsed).map((vendor) => (
-                                  <VendorCard
-                                      key={`${vendor.name}-${vendor.category}`}
-                                      eventId={eventId}
-                                      vendorNeedId={vendorNeedId}
-                                      name={vendor.name}
-                                      category={vendor.category}
-                                      text={`Used for ${vendor.event} (${formatDate(vendor.event_date)})`}
-                                      priceLabel="Paid before"
-                                      price={vendor.price}
-                                      links={vendor.contact && <p className="text-muted-foreground text-xs">{vendor.contact}</p>}
-                                      defaults={{
-                                          vendor_name: vendor.name,
-                                          vendor_contact: vendor.contact ?? '',
-                                          price: String(vendor.price),
-                                          notes: vendor.notes ?? '',
-                                      }}
-                                  />
-                              ))}
+                                <VendorCard
+                                    key={`${vendor.name}-${vendor.category}`}
+                                    eventId={eventId}
+                                    vendorNeedId={vendorNeedId}
+                                    name={vendor.name}
+                                    category={vendor.category}
+                                    rating={<RatingSummary rating={vendor.rating} count={vendor.reviews_count} />}
+                                    text={`Used for ${vendor.event} (${formatDate(vendor.event_date)})`}
+                                    priceLabel="Paid before"
+                                    price={vendor.price}
+                                    links={vendor.contact && <p className="text-muted-foreground text-xs">{vendor.contact}</p>}
+                                    defaults={{
+                                        vendor_name: vendor.name,
+                                        vendor_contact: vendor.contact ?? '',
+                                        price: String(vendor.price),
+                                        notes: vendor.notes ?? '',
+                                    }}
+                                />
+                            ))}
                     </ul>
                 )}
 

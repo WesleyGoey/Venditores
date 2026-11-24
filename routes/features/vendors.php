@@ -15,4 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::put('vendors/{vendor}/review', [VendorReviewController::class, 'store'])->name('vendors.review.store');
     Route::delete('vendors/{vendor}/review', [VendorReviewController::class, 'destroy'])->name('vendors.review.destroy');
+
+    // Vendors users entered themselves have no record of their own, only a name.
+    Route::put('vendor-reviews', [VendorReviewController::class, 'storeByName'])->name('vendor-reviews.store');
+    Route::delete('vendor-reviews', [VendorReviewController::class, 'destroyByName'])->name('vendor-reviews.destroy');
 });
