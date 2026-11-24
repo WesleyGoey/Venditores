@@ -1,7 +1,9 @@
 import Heading from '@/components/heading';
 import SortSelect from '@/components/sort-select';
+import { RatingSummary } from '@/components/star-rating';
 import { EventStatusBadge, ProcurementStatusBadge } from '@/components/status-badges';
 import { Input } from '@/components/ui/input';
+import VendorReviewsDialog, { type ReviewedVendor } from '@/components/vendor-reviews-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatRupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -49,7 +51,12 @@ const vendorSortOptions: { value: VendorSort; label: string }[] = [
 
 const spend = (event: HistoryEvent) => event.vendors.reduce((sum, vendor) => sum + vendor.price, 0);
 
-export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
+type ReviewSummary = Omit<ReviewedVendor, 'id' | 'name'>;
+
+const noReviews: ReviewSummary = { rating: null, reviews_count: 0, reviews: [], my_review: null };
+
+/** Reviews are keyed by the vendor name in lower case, the same key the server uses. */
+export default function HistoryIndex({ events, reviews }: { events: HistoryEvent[]; reviews: Record<string, ReviewSummary> }) {
     const [tab, setTab] = useState<'events' | 'vendors'>('events');
     const [query, setQuery] = useState('');
     const [eventSort, setEventSort] = useState<EventSort>('date_desc');
@@ -215,29 +222,40 @@ export default function HistoryIndex({ events }: { events: HistoryEvent[] }) {
                     </p>
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {vendors.map((entry) => (
-                            <div key={entry.name} className="glass space-y-3 rounded-2xl p-4">
-                                <div className="flex items-start justify-between gap-2">
-                                    <p className="leading-tight font-semibold">{entry.name}</p>
-                                    <span className="bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 text-xs">
-                                        {entry.uses.length}x used
-                                    </span>
+                        {vendors.map((entry) => {
+                            const review = reviews[entry.name.trim().toLowerCase()] ?? noReviews;
+
+                            return (
+                                <div key={entry.name} className="glass space-y-3 rounded-2xl p-4">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0 space-y-1">
+                                            <p className="leading-tight font-semibold">{entry.name}</p>
+                                            <RatingSummary rating={review.rating} count={review.reviews_count} />
+                                        </div>
+                                        <span className="bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 text-xs">
+                                            {entry.uses.length}x used
+                                        </span>
+                                    </div>
+                                    <ul className="space-y-1.5 text-sm">
+                                        {entry.uses.map((use) => (
+                                            <li key={use.vendor.need_id} className="flex justify-between gap-2">
+                                                <span className="min-w-0">
+                                                    <Link href={route('events.show', use.event.id)} className="hover:underline">
+                                                        {use.event.name}
+                                                    </Link>
+                                                    <span className="text-muted-foreground text-xs"> · {use.vendor.category}</span>
+                                                </span>
+                                                <span className="tabular-nums">{formatRupiah(use.vendor.price)}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <VendorReviewsDialog
+                                        key={`${entry.name}-${review.my_review?.rating ?? 0}`}
+                                        vendor={{ name: entry.name, ...review }}
+                                    />
                                 </div>
-                                <ul className="space-y-1.5 text-sm">
-                                    {entry.uses.map((use) => (
-                                        <li key={use.vendor.need_id} className="flex justify-between gap-2">
-                                            <span className="min-w-0">
-                                                <Link href={route('events.show', use.event.id)} className="hover:underline">
-                                                    {use.event.name}
-                                                </Link>
-                                                <span className="text-muted-foreground text-xs"> · {use.vendor.category}</span>
-                                            </span>
-                                            <span className="tabular-nums">{formatRupiah(use.vendor.price)}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

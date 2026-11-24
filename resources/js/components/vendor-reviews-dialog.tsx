@@ -5,31 +5,40 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDate } from '@/lib/format';
-import { type RecommendedVendor, type SharedData, type VendorReview } from '@/types';
+import { type SharedData, type VendorReview } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
-interface VendorReviewsDialogProps {
-    vendor: RecommendedVendor & { reviews: VendorReview[]; my_review: { rating: number; comment: string | null } | null };
+export interface ReviewedVendor {
+    /** Recommended vendors have an id. Vendors users entered themselves are reviewed by name. */
+    id?: number;
+    name: string;
+    rating: number | null;
+    reviews_count: number;
+    reviews: VendorReview[];
+    my_review: { rating: number; comment: string | null } | null;
 }
 
-export default function VendorReviewsDialog({ vendor }: VendorReviewsDialogProps) {
+export default function VendorReviewsDialog({ vendor }: { vendor: ReviewedVendor }) {
     // Admins read reviews but never write them.
     const canReview = !usePage<SharedData>().props.auth.user.is_admin;
+    const byName = vendor.id === undefined;
     const { data, setData, put, processing, errors } = useForm({
+        name: vendor.name,
         rating: vendor.my_review?.rating ?? 0,
         comment: vendor.my_review?.comment ?? '',
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('vendors.review.store', vendor.id), { preserveScroll: true });
+        put(byName ? route('vendor-reviews.store') : route('vendors.review.store', vendor.id), { preserveScroll: true });
     };
 
     const remove = () => {
-        router.delete(route('vendors.review.destroy', vendor.id), {
+        router.delete(byName ? route('vendor-reviews.destroy') : route('vendors.review.destroy', vendor.id), {
+            data: byName ? { name: vendor.name } : {},
             preserveScroll: true,
-            onSuccess: () => setData({ rating: 0, comment: '' }),
+            onSuccess: () => setData({ name: vendor.name, rating: 0, comment: '' }),
         });
     };
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\QuoteStatus;
 use App\Models\Event;
 use App\Models\VendorNeed;
+use App\Models\VendorReview;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,20 +18,20 @@ class HistoryController extends Controller
     public function __invoke(Request $request): Response
     {
         $events = $request->user()->events()
-            ->with(['vendorNeeds' => fn ($needs) => $needs
-                ->with(['quotes' => fn ($quotes) => $quotes->where('status', QuoteStatus::Accepted->value)])
+            ->with(['vendorNeeds' => fn($needs) => $needs
+                ->with(['quotes' => fn($quotes) => $quotes->where('status', QuoteStatus::Accepted->value)])
                 ->orderBy('category')])
             ->orderByDesc('event_date')
             ->get()
-            ->map(fn (Event $event): array => [
+            ->map(fn(Event $event): array => [
                 'id' => $event->id,
                 'name' => $event->name,
                 'event_date' => $event->event_date->toDateString(),
                 'location' => $event->location,
                 'status' => $event->status,
                 'vendors' => $event->vendorNeeds
-                    ->filter(fn (VendorNeed $need): bool => $need->quotes->isNotEmpty())
-                    ->map(fn (VendorNeed $need): array => [
+                    ->filter(fn(VendorNeed $need): bool => $need->quotes->isNotEmpty())
+                    ->map(fn(VendorNeed $need): array => [
                         'need_id' => $need->id,
                         'category' => $need->category,
                         'name' => $need->quotes->first()->vendor_name,
@@ -41,6 +42,9 @@ class HistoryController extends Controller
                     ->values(),
             ]);
 
-        return Inertia::render('history/index', ['events' => $events]);
+        return Inertia::render('history/index', [
+            'events' => $events,
+            'reviews' => VendorReview::summariesFor($events->pluck('vendors')->flatten(1)->pluck('name'), $request->user()),
+        ]);
     }
 }
