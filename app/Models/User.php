@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SupabaseAuth;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,6 +38,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'supabase_id',
     ];
 
     /**
@@ -59,5 +61,13 @@ class User extends Authenticatable implements MustVerifyEmail
     public function events(): HasMany
     {
         return $this->hasMany(Event::class);
+    }
+
+    /**
+     * Supabase Auth sends the confirmation email, not Laravel.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        app(SupabaseAuth::class)->resendConfirmation($this->email);
     }
 }
