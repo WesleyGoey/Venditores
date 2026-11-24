@@ -35,6 +35,13 @@ return [
         'timeout' => (int) env('GEMINI_TIMEOUT', 170),
     ],
 
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'secret_key' => env('SUPABASE_SECRET_KEY'),
+        'publishable_key' => env('SUPABASE_PUBLISHABLE_KEY'),
+        'realtime' => (bool) env('SUPABASE_REALTIME', false),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
