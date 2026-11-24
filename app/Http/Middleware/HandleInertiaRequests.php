@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\RealtimeNotifier;
 use App\Support\VendorCategories;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
@@ -47,6 +48,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'realtime' => fn () => app(RealtimeNotifier::class)->connectionFor($request->user()),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

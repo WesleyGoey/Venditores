@@ -2,9 +2,20 @@
 
 namespace App\Providers;
 
+use App\Models\Event;
+use App\Models\Quote;
+use App\Models\RecommendedVendor;
 use App\Models\User;
+use App\Models\VendorNeed;
+use App\Models\VendorReview;
+use App\Services\RealtimeNotifier;
+use App\Services\SupabaseAuth;
+use App\Services\SupabaseUserProvider;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(RealtimeNotifier::class);
     }
 
     /**
@@ -26,7 +37,30 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::define('manage-vendors', fn (User $user): bool => $user->is_admin);
 
+        Auth::provider('supabase', fn (Application $app, array $config): SupabaseUserProvider => new SupabaseUserProvider(
+            $app['hash'],
+            $config['model'],
+            $app->make(SupabaseAuth::class),
+        ));
+
         $this->configureAiRateLimits();
+        $this->configureRealtime();
+    }
+
+    /**
+     * Ping open browsers when data they show was saved or deleted.
+     */
+    private function configureRealtime(): void
+    {
+        foreach ([Event::class, VendorNeed::class, Quote::class] as $model) {
+            $model::saved(fn (Model $changed) => app(RealtimeNotifier::class)->changed($changed));
+            $model::deleted(fn (Model $changed) => app(RealtimeNotifier::class)->changed($changed));
+        }
+
+        foreach ([RecommendedVendor::class, VendorReview::class] as $model) {
+            $model::saved(fn () => app(RealtimeNotifier::class)->vendorsChanged());
+            $model::deleted(fn () => app(RealtimeNotifier::class)->vendorsChanged());
+        }
     }
 
     /**

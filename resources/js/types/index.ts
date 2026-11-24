@@ -28,6 +28,8 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     flash: FlashMessages;
+    /** Supabase Realtime connection, or null when realtime is off. */
+    realtime: { url: string; key: string; topics: string[] } | null;
     [key: string]: unknown;
 }
 
@@ -141,4 +143,8 @@ export interface UsedVendor {
     category: string;
     event: string;
     event_date: string;
+    /** Only sent on a vendor need page: the category fits that need. */
+    matches_need?: boolean;
+    rating: number | null;
+    reviews_count: number;
 }
