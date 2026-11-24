@@ -23,6 +23,20 @@ test('a free-text category fits the listed categories it contains', function () 
         ->and(VendorCategories::fitting('ab'))->toBe([]);
 });
 
+test('indonesian category names fit the listed categories as whole words', function () {
+    expect(VendorCategories::fitting('Katering & Konsumsi'))->toBe(['Catering'])
+        ->and(VendorCategories::fitting('Dokumentasi Acara'))->toBe(['Documentation'])
+        ->and(VendorCategories::fitting('Akomodasi'))->toBe(['Accommodation']);
+});
+
+test('a vendor belongs under a need with the same or a related category', function () {
+    expect(VendorCategories::sameOrRelated('Katering & Konsumsi', 'Catering & Konsumsi'))->toBeTrue()
+        ->and(VendorCategories::sameOrRelated('Beverages & Coffee', 'Konsumsi'))->toBeTrue()
+        ->and(VendorCategories::sameOrRelated('Venue', 'Katering'))->toBeFalse()
+        ->and(VendorCategories::sameOrRelated('Magician Show', 'Magician'))->toBeTrue()
+        ->and(VendorCategories::sameOrRelated('Magician', 'Juggler'))->toBeFalse();
+});
+
 test('related categories go with the same one and never repeat it', function () {
     $related = VendorCategories::relatedTo('Catering');
 

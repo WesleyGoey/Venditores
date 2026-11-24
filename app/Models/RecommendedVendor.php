@@ -37,16 +37,6 @@ class RecommendedVendor extends Model
         return $this->hasMany(VendorReview::class);
     }
 
-    /**
-     * Whether this vendor's category fits a vendor need category, ignoring case.
-     */
-    public function matchesCategory(string $category): bool
-    {
-        $mine = mb_strtolower(trim($this->category));
-        $other = mb_strtolower(trim($category));
-
-        return $mine !== '' && $other !== '' && (str_contains($other, $mine) || str_contains($mine, $other));
-    }
 
     /**
      * Vendors whose category matches a vendor need category, ignoring case.
@@ -56,8 +46,9 @@ class RecommendedVendor extends Model
     {
         $needle = mb_strtolower(trim($category));
 
-        $query->where(fn (Builder $match) => $match
-            ->whereRaw('lower(category) like ?', ['%'.$needle.'%'])
-            ->orWhereRaw("? like '%' || lower(category) || '%'", [$needle]));
+
+        $query->where(fn(Builder $match) => $match
+            ->whereRaw('lower(category) like ?', ['%' . $needle . '%'])
+            ->orWhereRaw("cast(? as text) like '%' || lower(category) || '%'", [$needle]));
     }
 }
