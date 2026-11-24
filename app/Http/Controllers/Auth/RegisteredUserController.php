@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Services\SupabaseAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -29,7 +29,7 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, SupabaseAuth $supabase): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -37,13 +37,16 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Supabase stores the real password and emails the confirmation link.
+        $supabaseId = $supabase->signUp($request->email, $request->password, $request->name);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Str::random(40),
         ]);
 
-        event(new Registered($user));
+        $user->forceFill(['supabase_id' => $supabaseId])->save();
 
         Auth::login($user);
 

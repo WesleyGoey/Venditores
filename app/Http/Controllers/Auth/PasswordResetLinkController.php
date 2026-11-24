@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\SupabaseAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,19 +23,17 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset link request.
+     * Ask Supabase to email a password reset link.
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, SupabaseAuth $supabase): RedirectResponse
     {
         $request->validate([
             'email' => 'required|email',
         ]);
 
-        Password::sendResetLink(
-            $request->only('email')
-        );
+        $supabase->sendPasswordReset($request->email);
 
         return back()->with('status', __('A reset link will be sent if the account exists.'));
     }
