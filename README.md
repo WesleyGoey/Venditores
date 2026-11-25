@@ -1,12 +1,17 @@
 <a id="readme-top"></a>
 
+
 <div align="center">
+
 
 # 📦 Venditores
 
+
 ### Pengadaan vendor acara, dari proposal PDF sampai hari H.
 
+
 Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari awal sampai acara selesai.
+
 
 [![Laravel][Laravel-badge]][Laravel-url]
 [![React][React-badge]][React-url]
@@ -14,13 +19,18 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 [![Tailwind CSS][Tailwind-badge]][Tailwind-url]
 [![Gemini][Gemini-badge]][Gemini-url]
 
+
 [![Website][Website-badge]][Website-url]
+
 
 [**Tim**](#-tim) · [**Fitur**](#-fitur) · [**Alur Kerja**](#-alur-kerja) · [**Menjalankan Project**](#-menjalankan-project)
 
+
 </div>
 
+
 ## 👥 Tim
+
 
 | Nama | NIM | Branch | Tugas |
 |---|---|---|---|
@@ -28,7 +38,9 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
 | Angga Dhammika Jaya | 0706012410017 | `ang` | Fondasi dan konfigurasi, navigasi, kebutuhan vendor dan penawaran, dashboard, deploy |
 | Keane Juan Suryanto | 0706012410004 | `kin` | Integrasi Gemini, analisis proposal, AI matching, pencarian vendor online |
 
+
 ---
+
 
 <details>
   <summary><b>📑 Daftar Isi</b></summary>
@@ -60,14 +72,20 @@ Aplikasi web untuk panitia acara yang membantu mengatur pengadaan vendor dari aw
   </ol>
 </details>
 
+
 ## 💡 Tentang Project
 
+
 Panitia mengunggah **proposal PDF**, lalu **Google Gemini** menyusun daftar kebutuhan vendor beserta anggarannya. Setelah itu panitia mencari vendor, membandingkan penawaran, dan memantau risiko dari **dashboard**.
+
 
 > 🌐 Website: **[venditores.fsd.my.id][Website-url]**
 
 
+
+
 ## 🔄 Alur Kerja
+
 
 ```mermaid
 flowchart LR
@@ -80,11 +98,14 @@ flowchart LR
 ```
 
 
+
+
 ## ✨ Fitur
+
 
 | | Fitur | Penjelasan |
 |:---:|---|---|
-| 🔐 | **Akun** | Daftar, login, reset password, dan verifikasi email. |
+| 🔐 | **Akun** | Daftar, login, reset password, dan verifikasi email lewat **Supabase Auth**. |
 | 📅 | **Event** | Cukup pilih proposal PDF (maks. 10 MB). Kolom nama, tanggal, lokasi, anggaran, dan deskripsi langsung terisi dari isi proposal. Semua bisa diubah. |
 | 🤖 | **Analisis proposal** | Gemini membaca proposal lalu menulis ringkasan, skala acara, perkiraan peserta, dan kategori vendor beserta persentase anggaran. Persentase itu diubah menjadi Rupiah sehingga total alokasi selalu sama dengan anggaran event. |
 | 📋 | **Kebutuhan vendor** | Tambah, ubah, hapus, dan tandai sebagai vital. Panel anggaran menunjukkan total, yang sudah dialokasikan, dan sisanya. |
@@ -97,16 +118,21 @@ flowchart LR
 | ⏰ | **Risiko** | Dihitung dari sisa hari menuju acara, tanpa AI. |
 | 📊 | **Dashboard** | Jumlah event, kebutuhan vendor, penawaran, total anggaran, status pipeline, kebutuhan kritis, dan peringatan risiko. |
 
+
 ### Status pengadaan
+
 
 ```mermaid
 flowchart LR
     A[Not started] --> B[Finding vendors] --> C[Comparing offers] --> D[Vendor chosen] --> E[Paid]
 ```
 
+
 Status berubah otomatis saat panitia bekerja dengan penawaran, kecuali **Paid** yang diatur manual. Tombol **"Status help"** menjelaskan arti tiap status.
 
+
 ### Status penawaran
+
 
 | Status | Arti |
 |---|---|
@@ -114,20 +140,26 @@ Status berubah otomatis saat panitia bekerja dengan penawaran, kecuali **Paid** 
 | **Chosen** | Vendor dipilih |
 | **Declined** | Penawaran ditolak |
 
+
 ### Vendor rekomendasi dan review
+
 
 | Peran | Bisa apa |
 |---|---|
 | **User** | Event, anggaran, kebutuhan vendor, penawaran, dashboard, history, melihat vendor rekomendasi dan memberi review |
 | **Admin** | Hanya menu **Vendors**: tambah, ubah, hapus vendor rekomendasi, melihat review, dan melihat vendor yang dimasukkan user di tab **"Added by users"**. Admin tidak punya event, dashboard, atau penawaran, dan tidak bisa memberi review |
 
+
 ### AI matching
+
 
 ```
 skor akhir = 60% skor spesifikasi (Gemini) + 40% skor harga (sistem)
 ```
 
+
 Skor spesifikasi hanya dari isi penawaran ("Offer details"). Nama vendor tidak dinilai.
+
 
 | Harga dibanding anggaran | Skor harga |
 |---|---|
@@ -137,7 +169,9 @@ Skor spesifikasi hanya dari isi penawaran ("Offer details"). Nama vendor tidak d
 | Lebih 10% | 50 |
 | Lebih 35% atau lebih | 0 |
 
+
 ### Risiko
+
 
 | Level | Sisa hari menuju acara |
 |---|---|
@@ -145,9 +179,12 @@ Skor spesifikasi hanya dari isi penawaran ("Offer details"). Nama vendor tidak d
 | 🟠 **Warning** | 60 hari atau kurang |
 | 🟢 **Low** | lebih dari 60 hari |
 
+
 ### Batas pemakaian AI
 
+
 Per pengguna, per menit:
+
 
 | Fitur | Batas |
 |---|---|
@@ -156,74 +193,164 @@ Per pengguna, per menit:
 | Pencarian vendor | 10 kali |
 
 
+
+
 ## 🚀 Menjalankan Project
 
+
 ### Prasyarat
+
 
 - **PHP 8.3** atau lebih baru, dengan ekstensi `pdo_sqlite`, `sqlite3`, `mbstring`, `openssl`, `fileinfo`, `curl`
 - **Composer 2**
 - **Node.js 22**
 - **Git**
 
+
 ### Instalasi
+
 
 ```bash
 git clone https://github.com/WesleyGoey/Venditores.git
 cd Venditores
 
+
 composer install
 npm install
 npm run build
 
+
 cp .env.example .env
 php artisan key:generate
+
 
 touch database/database.sqlite
 php artisan migrate
 php artisan db:seed              # opsional, data demo
 
+
 composer run dev
 ```
 
+
 Buka 👉 **http://127.0.0.1:8000**
 
+
 ### Konfigurasi `.env`
+
 
 | Variabel | Keterangan |
 |---|---|
 | `GEMINI_API_KEY` | Tanpa key, hanya fitur AI yang tidak jalan. |
 | `MAIL_MAILER=log` | Email tidak dikirim, link verifikasi ada di `storage/logs/laravel.log`. |
 
+
 > ⚠️ Jangan commit file `.env` ke GitHub.
+
+
+### Supabase (production)
+
+
+Laravel tetap menjadi backend. Supabase dipakai sebagai database PostgreSQL dan tempat menyimpan PDF proposal. Di lokal boleh tetap memakai SQLite dan disk `local`.
+
+
+1. Buat project di [Supabase](https://supabase.com), region **Southeast Asia (Singapore)**.
+2. **Database**: buka **Connect → Session pooler**, salin host, port, user, dan password ke `.env`:
+
+
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
+   DB_PORT=5432
+   DB_DATABASE=postgres
+   DB_USERNAME=postgres.<project-ref>
+   DB_PASSWORD=<password database>
+   DB_SSLMODE=require
+   ```
+
+
+   Pakai **Session pooler** (port 5432). Koneksi Direct hanya IPv6, dan Transaction pooler (port 6543) tidak mendukung prepared statement.
+3. **Storage**: buat bucket **private** bernama `proposals`. Lalu di **Storage → Settings → S3 Connection**, buat access key dan isi:
+
+
+   ```env
+   PROPOSAL_DISK=supabase
+   SUPABASE_STORAGE_KEY=<access key id>
+   SUPABASE_STORAGE_SECRET=<secret access key>
+   SUPABASE_STORAGE_REGION=ap-southeast-1
+   SUPABASE_STORAGE_BUCKET=proposals
+   SUPABASE_STORAGE_ENDPOINT=https://<project-ref>.storage.supabase.co/storage/v1/s3
+   ```
+
+
+4. **Auth**: akun (daftar, login, verifikasi email, reset password) dikelola **Supabase Auth**. Laravel tetap menyimpan sesi login dan tabel `users` yang terhubung lewat kolom `supabase_id`. Di **Settings → API Keys → Secret keys**, salin secret key ke `.env`:
+
+
+   ```env
+   SUPABASE_URL=https://<project-ref>.supabase.co
+   SUPABASE_SECRET_KEY=sb_secret_...
+   ```
+
+
+   Secret key hanya untuk server. Jangan taruh di kode frontend atau di GitHub.
+
+
+   Di **Authentication → URL Configuration**, isi **Site URL** dengan alamat website live, lalu tambahkan **Redirect URLs**: alamat live dan alamat lokal, misalnya `https://venditores.fsd.my.id/**` dan `http://127.0.0.1:8000/**`. Link di email konfirmasi dan reset password hanya boleh kembali ke alamat yang ada di daftar ini.
+
+
+   Email bawaan Supabase dibatasi beberapa email per jam. Untuk pengguna sungguhan, isi SMTP sendiri di **Authentication → Emails → SMTP Settings**.
+5. **Realtime**: halaman ikut berubah saat data berubah tanpa refresh. Setelah data tersimpan, Laravel mengirim sinyal "ada perubahan" lewat **Supabase Realtime Broadcast**. Browser mendengarkannya dengan `@supabase/supabase-js`, lalu memuat ulang datanya dari Laravel. Sinyal tidak membawa data, jadi hak akses tetap diatur Laravel. Salin **publishable key** dari **Settings → API Keys** (aman dipakai di browser), lalu isi:
+
+
+   ```env
+   SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   SUPABASE_REALTIME=true
+   ```
+
+
+   Pastikan **Realtime → Settings → Allow public access** menyala. Untuk melihat sinyalnya, buka **Realtime → Inspector**, ketik nama channel, lalu **Listen to channel**.
+6. PHP harus punya ekstensi `pdo_pgsql` (cek dengan `php -m`).
+7. Jalankan `php artisan config:clear` lalu `php artisan migrate`. Semua tabel akan muncul di **Table Editor** Supabase.
+
 
 ### Akun demo
 
+
 Tersedia setelah `php artisan db:seed`. Seeder ini hanya untuk lokal.
+
 
 | Email | Password |
 |---|---|
 | `test@example.com` | `password` |
 | `admin@gmail.com` (admin) | `admin123` |
 
+
 Akun admin dibuat otomatis di server setiap deploy (hanya jika belum ada, password yang sudah diganti tidak ditimpa). Di lokal:
+
 
 ```bash
 php artisan db:seed --class=AdminSeeder
 ```
 
+
 Untuk menjadikan akun lain admin, misalnya di server:
+
 
 ```bash
 php artisan user:make-admin email@contoh.com
 ```
 
+
 ### Setelah `git pull`
+
 
 ```bash
 composer install
 npm install
 php artisan migrate
 ```
+
+
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
