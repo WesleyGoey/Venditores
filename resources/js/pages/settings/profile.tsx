@@ -3,6 +3,7 @@ import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
@@ -12,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Profile settings',
@@ -19,33 +21,41 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
+
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         name: auth.user.name,
         email: auth.user.email,
     });
 
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
+
         patch(route('profile.update'));
     };
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Profile settings" />
 
+
             <SettingsLayout>
                 <div className="space-y-6">
                     <HeadingSmall title="Profile information" description="Update your name and email address" />
+
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
                             <Label htmlFor="name" required>
                                 Name
                             </Label>
+
 
                             <Input
                                 id="name"
@@ -57,13 +67,16 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 placeholder="Full name"
                             />
 
+
                             <InputError className="mt-2" message={errors.name} />
                         </div>
+
 
                         <div className="grid gap-2">
                             <Label htmlFor="email" required>
                                 Email address
                             </Label>
+
 
                             <Input
                                 id="email"
@@ -76,8 +89,15 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 placeholder="Email address"
                             />
 
+
                             <InputError className="mt-2" message={errors.email} />
+                            {status === 'email-change-sent' && (
+                                <p className="text-primary text-sm font-medium">
+                                    Check your current and new inbox. Your email changes once you confirm the link.
+                                </p>
+                            )}
                         </div>
+
 
                         {mustVerifyEmail && auth.user.email_verified_at === null && (
                             <div>
@@ -93,6 +113,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                     </Link>
                                 </p>
 
+
                                 {status === 'verification-link-sent' && (
                                     <div className="mt-2 text-sm font-medium text-green-600">
                                         A new verification link has been sent to your email address.
@@ -101,8 +122,10 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                             </div>
                         )}
 
+
                         <div className="flex items-center gap-4">
                             <Button disabled={processing}>Save</Button>
+
 
                             <Transition
                                 show={recentlySuccessful}
@@ -116,6 +139,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         </div>
                     </form>
                 </div>
+
 
                 <DeleteUser />
             </SettingsLayout>
