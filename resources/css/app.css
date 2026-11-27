@@ -184,11 +184,18 @@
 }
 
 /* A field whose wrapper holds an error message gets a red border. */
-:has(> [role='alert']) > :is(input, textarea, [role='combobox']) {
+:has(> [role='alert']) > :is(input, textarea, [role='combobox']),
+:has(> [role='alert']) > [data-password] > input {
     border-color: var(--destructive);
 }
 
-/* Frosted surface. Cards, the content panel and the landing page share it. */
+/* A page section inside the app: the glass tint and hairline without a second blur, so only the top bar frosts the mesh. */
+@utility sheet {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+}
+
+/* Frosted surface. The landing page and the app top bar use it, one per region. */
 @utility glass {
     background: var(--glass);
     border: 1px solid var(--glass-border);

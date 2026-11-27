@@ -91,7 +91,7 @@ components:
 
 **Creative North Star: "The RAB Sheet"**
 
-Venditores is the committee's own RAB (rencana anggaran biaya, the event budget sheet), already filled in. The landing page is that sheet: one large frosted glass panel with hairline ruled rows, a column header, a total row, and a closing approval block with Prepared by and Approved by lines. The in-app screens share the same palette and glass; the landing is the Persuade surface of that one system. The app screens were not redesigned in this run, so they carry the same tokens but not the sheet composition.
+Venditores is the committee's own RAB (rencana anggaran biaya, the event budget sheet), already filled in. The landing page is that sheet: one large frosted glass panel with hairline ruled rows, a column header, a total row, and a closing approval block with Prepared by and Approved by lines. The in-app screens share the same palette and glass; the landing is the Persuade surface of that one system. The app screens use the same sheet language: a frosted top bar, then each page is built from `.sheet` panels with hairline ruled rows (events, vendor needs, quotes, the next-to-secure list), never card grids.
 
 The register is calm, exact and bookkeeping-literal. Paper, ink and a single live blue sit over a pale mesh wash. State is shown as a mark, not a hue: a struck check is a locked vendor, a blue ring is offers to compare, a dash is not started. Proof is arithmetic on screen: shares add to 100%, the total counts to Rp150.000.000, scores follow a stated 60% spec fit and 40% price formula.
 
@@ -155,6 +155,8 @@ Container is `max-w-6xl` with 16px (sm: 24px) side gutters. Rows are one shared 
 
 Depth is tonal and optical, not shadowed. The `.glass` utility (`--glass` white at 50%, 1px white at 70% border, blur 20px with 1.4 saturation, `0 8px 32px rgb(23 25 29 / 0.08)`) frosts the mesh behind it. In dark theme the glass drops to white at 6%, border white at 12%, shadow black at 35%. Inside a sheet, depth steps by white overlays (white/35 total row, white/45 offers well, white/50 hover) rather than more shadows. The only lift beyond glass is the primary call-to-action glow.
 
+In the app, the top bar is the only `.glass` (blurred) surface. Page sections use the `.sheet` utility: the same `--glass` tint and border with no blur and no shadow. Dialogs are solid `--background` with a hairline and one `shadow-lg`, because a modal is the one thing that really sits above the page; their overlay is a plain 30% black with no blur.
+
 ### Shadow Vocabulary
 - **Glass** (`0 8px 32px rgb(23 25 29 / 0.08)`): every `.glass` surface.
 - **CTA glow** (`0 8px 24px rgba(36,76,255,0.35)`): large primary buttons only.
@@ -165,20 +167,27 @@ Depth is tonal and optical, not shadowed. The `.glass` utility (`--glass` white 
 
 ## Shapes
 
-Soft but large. Sheets and panels use 24px radius, the app Card 16px, nested wells 16px, inputs and base radius 8px (`--radius`). Every button, nav pill, badge and the header are fully round (pill). Rows are square-edged inside the sheet and divided by 1px hairlines; the total row takes a 2px Ink rule. Status marks are 20px circles; share bars are 6px pills.
+Soft but large. Sheets and panels use 24px radius, the app Card 16px, nested wells 16px, inputs and base radius 8px (`--radius`). The primary button and the header are fully round (pill). Secondary, outline and ghost buttons, filter chips and tabs use 8px, so the pill stays the one shape that means "do this next" (owner decision in antislop audit 001, overriding the earlier all-pill rule). Rows are square-edged inside the sheet and divided by 1px hairlines; the total row takes a 2px Ink rule. Status marks are 20px circles; share bars are 6px pills.
 
 ## Components
 
 ### Buttons
-- **Shape:** pill (9999px).
+- **Shape:** primary is a pill (9999px); every other variant is 8px.
 - **Primary:** Live Blue fill, white medium text, large 14px by 28px with CTA glow, compact 6px by 16px in the nav; hover to Pressed Blue; 2px blue focus outline with 2px offset.
-- **Outline:** white at 50% fill, 1px white at 70% border, hover white at 80%; dark theme white at 5% and 10%. Used for Log in beside the primary action. The app's default Button is the same blue at 90% on hover.
+- **Outline:** white at 50% fill, 1px ink at 15% border, no blur, hover white at 80%; dark theme white at 5% and 10%. Used for Log in beside the primary action. The app's default Button is the same blue at 90% on hover.
 
 ### Cards / Containers
 - **Sheet / Card:** `.glass`, radius 24px (landing) or 16px (app Card), Card padding 24px. Card is the in-app counterpart of the sheet.
 
 ### Navigation
 - Sticky glass pill, 16px from top: logo and wordmark left in display face, centered links in 14px medium body-grey that gain a white/70 pill on hover, auth actions right. Links collapse below md.
+- **App top bar:** the same pill, 12px from top. Committee members get Dashboard, Events, Vendors and History; the current page is ink, semibold and underlined with a 2px ink bar (shape and weight, not only color). Below md the links move into a left sheet behind a 44px menu button. The admin runs one page, so the bar holds only the logo and the account menu. There is no sidebar and no breadcrumb bar: nested pages carry a back link above their h1.
+
+### Deadlines panel
+The dashboard's Deadlines list is the one inverted surface in the app: solid Ink with Paper text, no glass, with the days left set large in the display face. It is the only panel that is not a `.sheet`, so it is the first thing the eye lands on. Do not give any other panel this treatment.
+
+### Status marks
+State is a 14px shape plus a word: dash (not started, draft), ring (open: finding vendors, under review, analyzed), blue ring (comparing offers, the one state that needs a decision), outlined check (vendor chosen, chosen), filled ink check (paid, completed), crossed ring (declined), filled ink "!" (urgent), dashed ring (date passed). The Vital flag is a hairline ink box, not red. Red is only for a price over budget and destructive actions.
 
 ### The Ruled Need Row (signature)
 Hairline-top row: colored 10px dot, semibold name, vendor, amount in tabular figures, share bar with percent, status mark. Expandable rows are full-width buttons with `aria-expanded`, a blue chevron, and an animated grid-rows reveal to a ranked offers table with a blue Best badge on the top score. Rows land via `rab-row` (0.6s, staggered 160ms, blue 14% cell flash fading to transparent) and bars via `rab-bar` (scaleX 0 to 1, 0.7s), easing `cubic-bezier(0.22, 1, 0.36, 1)`; reduced motion shows the finished sheet.
