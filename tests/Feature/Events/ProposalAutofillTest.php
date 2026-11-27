@@ -1,5 +1,6 @@
 <?php
 
+
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Http\Client\Request;
@@ -7,15 +8,18 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
+
 beforeEach(function () {
     Storage::fake('local');
     config(['services.gemini.key' => 'test-key']);
 });
 
+
 function proposalFile(): UploadedFile
 {
     return UploadedFile::fake()->create('proposal.pdf', 200, 'application/pdf');
 }
+
 
 test('a proposal alone is enough to create an event', function () {
     Http::fake([geminiEndpoint() => Http::response(geminiResponse([
@@ -27,7 +31,9 @@ test('a proposal alone is enough to create an event', function () {
     ]))]);
     $user = User::factory()->create();
 
+
     $this->actingAs($user)->post(route('events.store'), ['proposal' => proposalFile()])->assertSessionHasNoErrors();
+
 
     expect($user->events()->sole())
         ->name->toBe('Nusantara Tech Fest')
@@ -37,6 +43,7 @@ test('a proposal alone is enough to create an event', function () {
         ->description->toBe('A tech festival.')
         ->proposal_path->not->toBeNull();
 });
+
 
 test('what the user typed is never overwritten by the proposal', function () {
     Http::fake([geminiEndpoint() => Http::response(geminiResponse([
@@ -48,7 +55,9 @@ test('what the user typed is never overwritten by the proposal', function () {
     ]))]);
     $user = User::factory()->create();
 
+
     $this->actingAs($user)->post(route('events.store'), ['name' => 'My Name', 'location' => 'Bali', 'proposal' => proposalFile()]);
+
 
     expect($user->events()->sole())
         ->name->toBe('My Name')
@@ -56,9 +65,11 @@ test('what the user typed is never overwritten by the proposal', function () {
         ->total_budget->toBe(1_000);
 });
 
+
 test('the AI is not called when the user already filled the required details', function () {
     Http::preventStrayRequests();
     $user = User::factory()->create();
+
 
     $this->actingAs($user)->post(route('events.store'), [
         'name' => 'Typed',
@@ -67,8 +78,10 @@ test('the AI is not called when the user already filled the required details', f
         'proposal' => proposalFile(),
     ])->assertSessionHasNoErrors();
 
+
     expect($user->events()->count())->toBe(1);
 });
+
 
 test('invalid values from the AI are dropped and reported as missing', function () {
     Http::fake([geminiEndpoint() => Http::response(geminiResponse([
@@ -80,20 +93,25 @@ test('invalid values from the AI are dropped and reported as missing', function 
     ]))]);
     $user = User::factory()->create();
 
+
     $this->actingAs($user)->post(route('events.store'), ['proposal' => proposalFile()])
         ->assertSessionHasErrors(['event_date', 'total_budget'])
         ->assertSessionDoesntHaveErrors('name');
 
+
     expect($user->events()->count())->toBe(0);
 });
 
+
 test('a Gemini failure asks the user to fill the details manually', function () {
     Http::fake([geminiEndpoint() => Http::response([], 503)]);
+
 
     $this->actingAs(User::factory()->create())
         ->post(route('events.store'), ['proposal' => proposalFile()])
         ->assertSessionHasErrors('proposal');
 });
+
 
 test('without a proposal the core details are still required', function () {
     $this->actingAs(User::factory()->create())
@@ -101,23 +119,29 @@ test('without a proposal the core details are still required', function () {
         ->assertSessionHasErrors(['name', 'event_date', 'total_budget']);
 });
 
+
 test('updating an event still requires the core details', function () {
     $event = Event::factory()->create();
+
 
     $this->actingAs($event->user)
         ->put(route('events.update', $event), ['name' => '', 'event_date' => '', 'total_budget' => ''])
         ->assertSessionHasErrors(['name', 'event_date', 'total_budget']);
 });
 
+
 test('the proposal pdf is sent to Gemini for extraction', function () {
     Http::fake([geminiEndpoint() => Http::response(geminiResponse([
         'name' => 'Fest', 'event_date' => '2027-03-01', 'location' => null, 'total_budget' => 1_000_000, 'description' => null,
     ]))]);
 
+
     $this->actingAs(User::factory()->create())->post(route('events.store'), ['proposal' => proposalFile()]);
+
 
     Http::assertSent(fn (Request $request) => ($request['contents'][0]['parts'][0]['inlineData']['mimeType'] ?? null) === 'application/pdf');
 });
+
 
 test('the form can read a proposal without saving anything', function () {
     Http::fake([geminiEndpoint() => Http::response(geminiResponse([
@@ -125,23 +149,29 @@ test('the form can read a proposal without saving anything', function () {
     ]))]);
     $user = User::factory()->create();
 
+
     $this->actingAs($user)->postJson(route('events.extract'), ['proposal' => proposalFile()])
         ->assertOk()
-        ->assertExactJson(['name' => 'NPLC', 'event_date' => '2027-03-01', 'location' => 'Surabaya', 'total_budget' => 50_000_000]);
+        ->assertExactJson(['name' => 'NPLC', 'event_date' => '2027-03-01', 'location' => 'Surabaya', 'total_budget' => 50_000_000, 'analysis' => null]);
+
 
     expect($user->events()->count())->toBe(0);
 });
 
+
 test('reading a proposal needs a pdf and a signed in user', function () {
     $this->postJson(route('events.extract'))->assertUnauthorized();
+
 
     $this->actingAs(User::factory()->create())
         ->postJson(route('events.extract'), ['proposal' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain')])
         ->assertJsonValidationErrors('proposal');
 });
 
+
 test('a Gemini failure while reading returns a json error', function () {
     Http::fake([geminiEndpoint() => Http::response([], 503)]);
+
 
     $this->actingAs(User::factory()->create())
         ->postJson(route('events.extract'), ['proposal' => proposalFile()])
