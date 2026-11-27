@@ -1,17 +1,20 @@
+import { StatusMark } from '@/components/status-badges';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { procurementMeta, procurementOrder, quoteMeta } from '@/lib/status-meta';
-import { cn } from '@/lib/utils';
+import { procurementMeta, procurementOrder, quoteMeta, type StatusMeta } from '@/lib/status-meta';
 import { type QuoteStatus } from '@/types';
 import { CircleHelp } from 'lucide-react';
 
 const quoteOrder: QuoteStatus[] = ['pending', 'accepted', 'rejected'];
 
-function Row({ label, description, badge }: { label: string; description: string; badge: string }) {
+function Row({ label, description, mark }: StatusMeta) {
     return (
-        <li className="flex items-center gap-3">
-            <span className={cn('inline-flex w-32 shrink-0 justify-center rounded-md px-2 py-0.5 text-xs font-medium', badge)}>{label}</span>
-            <span className="text-sm">{description}</span>
+        <li className="grid grid-cols-[9rem_minmax(0,1fr)] items-start gap-3">
+            <span className="flex items-center gap-2 text-sm font-medium">
+                <StatusMark kind={mark} />
+                {label}
+            </span>
+            <span className="text-muted-foreground text-sm">{description}</span>
         </li>
     );
 }
@@ -38,7 +41,7 @@ export default function StatusGuide() {
                                 <Row key={status} {...procurementMeta[status]} />
                             ))}
                         </ul>
-                        <p className="text-muted-foreground text-xs">Only "Paid" is set by you.</p>
+                        <p className="text-muted-foreground text-xs">Only "Paid" is set by you, from the status steps on the vendor need.</p>
                     </section>
                     <section className="space-y-2">
                         <h3 className="text-sm font-medium">Quote</h3>

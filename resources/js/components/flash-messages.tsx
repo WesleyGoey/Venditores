@@ -12,7 +12,7 @@ export function FlashMessages() {
     }, [flash.success, flash.error]);
 
     return (
-        <div className="space-y-2 px-4 pt-4 empty:hidden" aria-live="polite">
+        <div className="mb-6 space-y-2 empty:hidden" aria-live="polite">
             {flash.success && visible.success && (
                 <div className="border-primary/30 bg-primary/10 text-foreground flex items-start gap-3 rounded-lg border px-4 py-3 text-sm">
                     <CircleCheck className="text-primary mt-0.5 size-4 shrink-0" />

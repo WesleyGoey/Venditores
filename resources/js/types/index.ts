@@ -1,24 +1,5 @@
-import { LucideIcon } from 'lucide-react';
-
 export interface Auth {
     user: User;
-}
-
-export interface BreadcrumbItem {
-    title: string;
-    href: string;
-}
-
-export interface NavGroup {
-    title: string;
-    items: NavItem[];
-}
-
-export interface NavItem {
-    title: string;
-    url: string;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
 }
 
 export interface SharedData {
@@ -39,6 +20,7 @@ export interface User {
     email: string;
     avatar?: string;
     is_admin: boolean;
+    is_vendor: boolean;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -53,7 +35,8 @@ export interface FlashMessages {
 export type EventStatus = 'draft' | 'analyzed' | 'completed';
 export type ProcurementStatus = 'drafting' | 'searching' | 'quoted' | 'deal' | 'paid';
 export type QuoteStatus = 'pending' | 'accepted' | 'rejected';
-export type RiskLevel = 'urgent' | 'warning' | 'low';
+export type VendorStatus = 'pending' | 'approved' | 'rejected';
+export type RiskLevel = 'passed' | 'urgent' | 'warning' | 'low';
 
 export interface Option<T extends string = string> {
     value: T;
