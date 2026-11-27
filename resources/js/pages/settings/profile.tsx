@@ -1,4 +1,4 @@
-import { type BreadcrumbItem, type SharedData } from '@/types';
+import { type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
@@ -12,14 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profile settings',
-        href: '/settings/profile',
-    },
-];
 
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
@@ -41,13 +33,20 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout>
             <Head title="Profile settings" />
 
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Profile information" description="Update your name and email address" />
+                    <HeadingSmall
+                        title="Profile"
+                        description={
+                            auth.user.is_admin || auth.user.is_vendor
+                                ? 'A new email only takes effect after you confirm it from that inbox.'
+                                : 'Your name shows on vendor reviews you write. A new email only takes effect after you confirm it from that inbox.'
+                        }
+                    />
 
 
                     <form onSubmit={submit} className="space-y-6">

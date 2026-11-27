@@ -1,22 +1,19 @@
 import EventForm from '@/components/event-form';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Events', href: '/events' },
-    { title: 'New event', href: '/events/create' },
-];
 
 export default function CreateEvent() {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout>
             <Head title="New event" />
-            <div className="p-4">
-                <Heading title="New event" description="Upload the proposal. The AI fills in the details." />
-                <EventForm submitUrl={route('events.store')} submitLabel="Create event" />
-            </div>
+            <Heading
+                title="New event"
+                back={{ href: route('events.index'), label: 'Events' }}
+                description="Pick the proposal PDF first. Name, date, location, budget and description fill in from it, and you can change any of them."
+            />
+            <EventForm submitUrl={route('events.store')} submitLabel="Create event" />
         </AppLayout>
     );
 }
