@@ -1,13 +1,13 @@
-import { ProcurementStatusBadge, RiskBadge, VitalBadge } from '@/components/status-badges';
+import Heading from '@/components/heading';
+import { ProcurementStatusBadge, StatusMark, VitalBadge } from '@/components/status-badges';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { formatDate, formatDaysRemaining, formatRupiah } from '@/lib/format';
-import { eventMeta, procurementMeta } from '@/lib/status-meta';
-import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type EventStatus, type ProcurementStatus, type RiskAssessment } from '@/types';
+import { formatDate, formatRupiah } from '@/lib/format';
+import { procurementMeta, riskMeta } from '@/lib/status-meta';
+import { type EventStatus, type ProcurementStatus, type RiskAssessment } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, CalendarDays, CalendarPlus, ClipboardList, FileText, Wallet } from 'lucide-react';
+import { CalendarPlus } from 'lucide-react';
+
 
 interface StatusCount<T extends string> {
     value: T;
@@ -15,11 +15,18 @@ interface StatusCount<T extends string> {
     count: number;
 }
 
+
 interface EventSummary {
     id: number;
     name: string;
     event_date: string;
 }
+
+
+interface WarningEvent extends EventSummary {
+    status: EventStatus;
+}
+
 
 interface CriticalNeed {
     id: number;
@@ -30,181 +37,249 @@ interface CriticalNeed {
     event: EventSummary;
 }
 
+
 interface DashboardProps {
-    stats: { events: number; vendor_needs: number; quotes: number; total_budget: number };
+    stats: {
+        events: number;
+        vendor_needs: number;
+        quotes: number;
+        total_budget: number;
+        needs_without_offers: number;
+        vital_needs_without_offers: number;
+    };
     eventStatusCounts: StatusCount<EventStatus>[];
     procurementStatusCounts: StatusCount<ProcurementStatus>[];
     criticalNeeds: CriticalNeed[];
-    warnings: (RiskAssessment & { event: EventSummary })[];
+    warnings: (RiskAssessment & { event: WarningEvent })[];
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
-function StatusBreakdown<T extends string>({ items, solid }: { items: StatusCount<T>[]; solid: (value: T) => string }) {
-    const total = items.reduce((sum, item) => sum + item.count, 0);
-
-    return (
-        <ul className="space-y-3">
-            {items.map((item) => (
-                <li key={item.value} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-2">
-                            <span className={cn('size-2 rounded-full', solid(item.value))} aria-hidden />
-                            {item.label}
-                        </span>
-                        <span className="font-medium tabular-nums">{item.count}</span>
-                    </div>
-                    <div className="bg-muted h-1.5 overflow-hidden rounded-full">
-                        <div
-                            className={cn('h-full rounded-full', solid(item.value))}
-                            style={{ width: total > 0 ? `${(item.count / total) * 100}%` : '0%' }}
-                        />
-                    </div>
-                </li>
-            ))}
-        </ul>
-    );
+function plural(count: number, word: string): string {
+    return `${count.toLocaleString('id-ID')} ${word}${count === 1 ? '' : 's'}`;
 }
 
+
+/** The screen answers two questions, in this order: which date is closest, and which vendor need should be secured next? */
 export default function Dashboard({ stats, eventStatusCounts, procurementStatusCounts, criticalNeeds, warnings }: DashboardProps) {
-    const statCards = [
-        { label: 'Events', value: stats.events.toLocaleString('id-ID'), icon: CalendarDays },
-        { label: 'Vendor needs', value: stats.vendor_needs.toLocaleString('id-ID'), icon: ClipboardList },
-        { label: 'Quotes', value: stats.quotes.toLocaleString('id-ID'), icon: FileText },
-        { label: 'Total budget', value: formatRupiah(stats.total_budget), icon: Wallet },
-    ];
+    const open = stats.needs_without_offers;
+    const nearest = warnings[0];
+    const needsTitle =
+        stats.events === 0
+            ? 'Start with a proposal'
+            : stats.vendor_needs === 0
+              ? 'No vendor needs yet'
+              : open === 0
+                ? 'Every need has an offer'
+                : `${plural(open, 'need')} still without an offer`;
+    const title = nearest
+        ? nearest.days_remaining < 0
+            ? 'An event date has passed'
+            : nearest.days_remaining === 0
+              ? 'An event is today'
+              : `Next deadline in ${plural(nearest.days_remaining, 'day')}`
+        : needsTitle;
+    const description = nearest
+        ? nearest.event.name
+        : stats.events === 0
+          ? 'Create an event, pick its proposal PDF, and the vendor list with its budget split appears here.'
+          : stats.vendor_needs === 0
+            ? 'Open an event, then analyze its proposal or add a need yourself.'
+            : open === 0
+              ? 'Compare the offers on each event and choose a vendor.'
+              : stats.vital_needs_without_offers > 0
+                ? `${stats.vital_needs_without_offers} of them ${stats.vital_needs_without_offers === 1 ? 'is' : 'are'} vital: the event cannot run without ${stats.vital_needs_without_offers === 1 ? 'it' : 'them'}.`
+                : 'None of them is vital, so start with the biggest budget.';
+
+
+    const eventCounts = eventStatusCounts
+        .filter((status) => status.count > 0)
+        .map((status) => `${status.count} ${status.label.toLowerCase()}`)
+        .join(', ');
+
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout>
             <Head title="Dashboard" />
-            <div className="flex flex-col gap-4 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-                        <p className="text-muted-foreground text-sm">Status and risk of all your events.</p>
-                    </div>
-                    <Button asChild>
-                        <Link href={route('events.create')}>
-                            <CalendarPlus className="size-4" />
-                            New event
-                        </Link>
-                    </Button>
-                </div>
+            <Heading title={title} description={description}>
+                <Button asChild>
+                    <Link href={route('events.create')}>
+                        <CalendarPlus />
+                        New event
+                    </Link>
+                </Button>
+            </Heading>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    {statCards.map((stat) => (
-                        <Card key={stat.label}>
-                            <CardContent className="space-y-1 p-5">
-                                <div className="text-muted-foreground flex items-center justify-between gap-2 text-sm">
-                                    <span>{stat.label}</span>
-                                    <stat.icon className="size-4 shrink-0" />
-                                </div>
-                                <p className={cn('font-semibold tabular-nums', stat.value.length > 12 ? 'text-xl' : 'text-2xl')}>{stat.value}</p>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
 
-                <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <AlertTriangle className="size-4" />
-                                Deadline risk
-                            </CardTitle>
-                            <CardDescription>Analyzed events 60 days or less away.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {warnings.length === 0 ? (
-                                <p className="text-muted-foreground text-sm">No risks right now.</p>
-                            ) : (
-                                <ul className="divide-y">
-                                    {warnings.map((warning) => (
-                                        <li
-                                            key={warning.event.id}
-                                            className="flex flex-wrap items-start justify-between gap-2 py-3 first:pt-0 last:pb-0"
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                <section className="bg-foreground text-background overflow-hidden rounded-2xl" aria-labelledby="deadlines">
+                    <h2 id="deadlines" className="font-display px-5 pt-5 pb-3 text-xl font-bold sm:px-6">
+                        Deadlines
+                    </h2>
+                    {warnings.length === 0 ? (
+                        <p className="border-background/20 text-background/70 border-t px-5 py-8 text-sm sm:px-6">
+                            No open event is within 60 days, and none has a date that already passed.
+                        </p>
+                    ) : (
+                        <ul className="divide-background/20 border-background/20 divide-y border-t">
+                            {warnings.map((warning) => (
+                                <li
+                                    key={warning.event.id}
+                                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-2 px-5 py-5 sm:px-6"
+                                >
+                                    <div className="min-w-0 space-y-1.5">
+                                        <Link
+                                            href={route('events.show', warning.event.id)}
+                                            className="block text-lg leading-snug font-semibold underline-offset-4 hover:underline"
                                         >
-                                            <div className="min-w-0 space-y-1">
-                                                <Link href={route('events.show', warning.event.id)} className="font-medium hover:underline">
-                                                    {warning.event.name}
+                                            {warning.event.name}
+                                        </Link>
+                                        <p className="text-background/70 text-xs">{formatDate(warning.event.event_date)}</p>
+                                        {warning.level === 'passed' ? (
+                                            <p className="text-sm">
+                                                Still open with {plural(warning.unsecured_needs, 'need')} unsecured.{' '}
+                                                <Link
+                                                    href={route('events.show', warning.event.id)}
+                                                    className="font-medium underline underline-offset-4"
+                                                >
+                                                    Mark it completed or change the date
                                                 </Link>
-                                                <p className="text-muted-foreground text-xs">
-                                                    {formatDate(warning.event.event_date)} · {formatDaysRemaining(warning.days_remaining)} ·{' '}
-                                                    {warning.unsecured_needs} needs without a vendor
-                                                </p>
+                                                .
+                                            </p>
+                                        ) : warning.event.status === 'draft' ? (
+                                            <p className="text-sm">
+                                                Not analyzed yet, so there is no vendor list.{' '}
+                                                <Link
+                                                    href={route('events.show', warning.event.id)}
+                                                    className="font-medium underline underline-offset-4"
+                                                >
+                                                    Analyze the proposal
+                                                </Link>
+                                                .
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm">
+                                                {plural(warning.unsecured_needs, 'need')} without a vendor
                                                 {warning.unsecured_vital_needs.length > 0 && (
-                                                    <p className="text-destructive text-xs">
-                                                        Vital, no vendor yet: {warning.unsecured_vital_needs.join(', ')}
-                                                    </p>
+                                                    <>
+                                                        , vital: <span className="font-medium">{warning.unsecured_vital_needs.join(', ')}</span>
+                                                    </>
                                                 )}
-                                            </div>
-                                            <RiskBadge level={warning.level} />
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </CardContent>
-                    </Card>
+                                                .
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1 text-right">
+                                        <p className="font-display text-4xl leading-none font-bold tabular-nums">
+                                            {warning.days_remaining < 0 ? 'Passed' : warning.days_remaining === 0 ? 'Today' : warning.days_remaining}
+                                        </p>
+                                        <p className="text-background/70 text-xs">
+                                            {warning.days_remaining < 0
+                                                ? `${Math.abs(warning.days_remaining)} days ago`
+                                                : warning.days_remaining === 0
+                                                  ? 'the event is today'
+                                                  : warning.days_remaining === 1
+                                                    ? 'day left'
+                                                    : 'days left'}
+                                        </p>
+                                        <span className="bg-background text-foreground inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold">
+                                            {riskMeta[warning.level].label}
+                                        </span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Events by status</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <StatusBreakdown items={eventStatusCounts} solid={(value) => eventMeta[value].solid} />
-                        </CardContent>
-                    </Card>
-                </div>
 
-                <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle className="text-lg">Needs without offers</CardTitle>
-                            <CardDescription>No quotes yet, or all quotes declined.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {criticalNeeds.length === 0 ? (
-                                <p className="text-muted-foreground text-sm">Every need has at least one offer.</p>
+                <section aria-labelledby="next-to-secure" className="space-y-3">
+                    <div className="flex items-baseline justify-between gap-4">
+                        <h2 id="next-to-secure" className="font-display text-lg font-semibold">
+                            Next to secure
+                        </h2>
+                        {open > criticalNeeds.length && (
+                            <span className="text-muted-foreground text-xs">
+                                {criticalNeeds.length} of {open}, vital first
+                            </span>
+                        )}
+                    </div>
+
+
+                    {stats.events === 0 ? (
+                        <p className="text-sm">
+                            Nothing to secure yet.{' '}
+                            <Link href={route('events.create')} className="font-medium underline underline-offset-4">
+                                Create your first event
+                            </Link>
+                            .
+                        </p>
+                    ) : criticalNeeds.length === 0 ? (
+                        <p className="text-muted-foreground text-sm">
+                            {stats.vendor_needs === 0 ? (
+                                'No vendor needs yet. Analyze a proposal, or add a need on an event.'
                             ) : (
-                                <ul className="divide-y">
-                                    {criticalNeeds.map((need) => (
-                                        <li key={need.id} className="flex flex-wrap items-center justify-between gap-2 py-3 first:pt-0 last:pb-0">
-                                            <div className="min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <Link
-                                                        href={route('events.vendor-needs.show', [need.event.id, need.id])}
-                                                        className="font-medium hover:underline"
-                                                    >
-                                                        {need.category}
-                                                    </Link>
-                                                    {need.is_vital && <VitalBadge />}
-                                                </div>
-                                                <p className="text-muted-foreground text-xs">
-                                                    {need.event.name} · {formatDate(need.event.event_date)}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-sm tabular-nums">{formatRupiah(need.allocated_budget)}</span>
-                                                <ProcurementStatusBadge status={need.procurement_status} />
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <>
+                                    Every vendor need has at least one offer.{' '}
+                                    <Link href={route('events.index')} className="text-foreground font-medium underline underline-offset-4">
+                                        Open your events
+                                    </Link>{' '}
+                                    to compare them.
+                                </>
                             )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Progress</CardTitle>
-                            <CardDescription>Vendor needs per status.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <StatusBreakdown items={procurementStatusCounts} solid={(value) => procurementMeta[value].solid} />
-                        </CardContent>
-                    </Card>
-                </div>
+                        </p>
+                    ) : (
+                        <ol className="divide-foreground/10 border-foreground/10 divide-y border-y">
+                            {criticalNeeds.map((need) => (
+                                <li key={need.id}>
+                                    <Link
+                                        href={route('events.vendor-needs.show', [need.event.id, need.id])}
+                                        className="block space-y-1 py-3 transition-colors hover:bg-white/50"
+                                    >
+                                        <span className="flex items-baseline justify-between gap-3">
+                                            <span className="flex flex-wrap items-center gap-2 font-semibold">
+                                                {need.category}
+                                                {need.is_vital && <VitalBadge />}
+                                            </span>
+                                            <span className="text-sm font-semibold tabular-nums">{formatRupiah(need.allocated_budget)}</span>
+                                        </span>
+                                        <span className="text-muted-foreground flex items-center justify-between gap-3 text-xs">
+                                            <span className="truncate">{need.event.name}</span>
+                                            <ProcurementStatusBadge status={need.procurement_status} />
+                                        </span>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ol>
+                    )}
+                </section>
             </div>
+
+
+            <section aria-labelledby="pipeline" className="mt-10">
+                <h2 id="pipeline" className="font-display text-lg font-semibold">
+                    Where every vendor need stands
+                </h2>
+                <ol className="border-foreground/10 mt-3 grid grid-cols-2 border-t sm:grid-cols-5">
+                    {procurementStatusCounts.map((status) => (
+                        <li
+                            key={status.value}
+                            className="border-foreground/10 border-b py-4 pr-4 sm:border-b-0"
+                            title={procurementMeta[status.value].description}
+                        >
+                            <span className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+                                <StatusMark kind={procurementMeta[status.value].mark} />
+                                {status.label}
+                            </span>
+                            <span className="font-display mt-1 block text-3xl font-bold tabular-nums">{status.count}</span>
+                        </li>
+                    ))}
+                </ol>
+                <p className="text-muted-foreground border-foreground/10 border-t pt-3 text-xs">
+                    {plural(stats.events, 'event')}
+                    {eventCounts && ` (${eventCounts})`} · {plural(stats.vendor_needs, 'vendor need')} · {plural(stats.quotes, 'quote')} ·{' '}
+                    {formatRupiah(stats.total_budget)} planned in total
+                </p>
+            </section>
         </AppLayout>
     );
 }

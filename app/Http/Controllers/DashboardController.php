@@ -1,6 +1,8 @@
 <?php
 
+
 namespace App\Http\Controllers;
+
 
 use App\Enums\EventStatus;
 use App\Enums\ProcurementStatus;
@@ -14,12 +16,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+
 class DashboardController extends Controller
 {
     /**
      * Number of critical needs shown on the dashboard.
      */
     private const CRITICAL_NEEDS_LIMIT = 10;
+
 
     /**
      * Show the procurement overview for the signed-in user.
@@ -28,8 +32,10 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
+
         $ownNeeds = fn (): Builder => VendorNeed::query()
             ->whereHas('event', fn (Builder $events) => $events->whereBelongsTo($user));
+
 
         $eventStatusCounts = $user->events()
             ->toBase()
@@ -37,15 +43,20 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->pluck('aggregate', 'status');
 
+
         $procurementStatusCounts = $ownNeeds()
             ->toBase()
             ->selectRaw('procurement_status, count(*) as aggregate')
             ->groupBy('procurement_status')
             ->pluck('aggregate', 'procurement_status');
 
-        $criticalNeeds = $ownNeeds()
+
+        $openNeeds = fn (): Builder => $ownNeeds()
             ->critical()
-            ->whereHas('event', fn (Builder $events) => $events->where('status', '!=', EventStatus::Completed->value))
+            ->whereHas('event', fn (Builder $events) => $events->where('status', '!=', EventStatus::Completed->value));
+
+
+        $criticalNeeds = $openNeeds()
             ->with('event:id,name,event_date')
             ->orderByDesc('is_vital')
             ->orderByDesc('allocated_budget')
@@ -64,8 +75,10 @@ class DashboardController extends Controller
                 ],
             ]);
 
+
+        // A draft close to its date is the riskiest case: it has no vendor list at all yet.
         $warnings = $user->events()
-            ->where('status', EventStatus::Analyzed->value)
+            ->where('status', '!=', EventStatus::Completed->value)
             ->with('vendorNeeds')
             ->get()
             ->map(fn (Event $event): array => [
@@ -73,12 +86,14 @@ class DashboardController extends Controller
                     'id' => $event->id,
                     'name' => $event->name,
                     'event_date' => $event->event_date->toDateString(),
+                    'status' => $event->status,
                 ],
                 ...$riskMonitor->assess($event),
             ])
             ->reject(fn (array $warning): bool => $warning['level'] === RiskLevel::Low)
             ->sortBy('days_remaining')
             ->values();
+
 
         return Inertia::render('dashboard', [
             'stats' => [
@@ -88,6 +103,8 @@ class DashboardController extends Controller
                     ->whereHas('vendorNeed.event', fn (Builder $events) => $events->whereBelongsTo($user))
                     ->count(),
                 'total_budget' => (int) $user->events()->sum('total_budget'),
+                'needs_without_offers' => $openNeeds()->count(),
+                'vital_needs_without_offers' => $openNeeds()->where('is_vital', true)->count(),
             ],
             'eventStatusCounts' => collect(EventStatus::cases())->map(fn (EventStatus $status): array => [
                 'value' => $status->value,
