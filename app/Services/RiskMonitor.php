@@ -1,31 +1,42 @@
 <?php
 
+
 namespace App\Services;
+
 
 use App\Enums\RiskLevel;
 use App\Models\Event;
 use App\Models\VendorNeed;
 use Carbon\CarbonInterface;
 
+
 class RiskMonitor
 {
     public const URGENT_WITHIN_DAYS = 30;
 
+
     public const WARNING_WITHIN_DAYS = 60;
 
+
+    /**
+     * An event whose date is behind it is not a deadline risk any more: it needs closing or a new date.
+     */
     public function levelForDaysRemaining(int $daysRemaining): RiskLevel
     {
         return match (true) {
+            $daysRemaining < 0 => RiskLevel::Passed,
             $daysRemaining <= self::URGENT_WITHIN_DAYS => RiskLevel::Urgent,
             $daysRemaining <= self::WARNING_WITHIN_DAYS => RiskLevel::Warning,
             default => RiskLevel::Low,
         };
     }
 
+
     public function daysRemaining(CarbonInterface $eventDate, CarbonInterface $today): int
     {
         return (int) $today->copy()->startOfDay()->diffInDays($eventDate->copy()->startOfDay(), false);
     }
+
 
     /**
      * Assess an event's deadline risk and the needs that are still open.
@@ -38,8 +49,10 @@ class RiskMonitor
     {
         $daysRemaining = $this->daysRemaining($event->event_date, $today ?? now());
 
+
         $unsecuredNeeds = $event->vendorNeeds
             ->reject(fn (VendorNeed $need): bool => $need->procurement_status->isSecured());
+
 
         return [
             'level' => $this->levelForDaysRemaining($daysRemaining),
