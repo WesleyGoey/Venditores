@@ -1,63 +1,47 @@
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
-
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        url: '/settings/profile',
-        icon: null,
-    },
-    {
-        title: 'Password',
-        url: '/settings/password',
-        icon: null,
-    },
+const sections = [
+    { title: 'Profile', href: '/settings/profile' },
+    { title: 'Password', href: '/settings/password' },
 ];
 
-
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-    const currentPath = window.location.pathname;
-
+    const { url } = usePage();
 
     return (
-        <div className="px-4 py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
+        <>
+            <Heading title="Settings" />
+            <div className="grid gap-8 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-12">
+                <nav className="border-foreground/10 flex gap-1 border-b lg:flex-col lg:border-b-0" aria-label="Settings">
+                    {sections.map((section) => {
+                        const current = url.startsWith(section.href);
 
-
-            <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                        {sidebarNavItems.map((item) => (
-                            <Button
-                                key={item.url}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.url,
-                                })}
+                        return (
+                            <Link
+                                key={section.href}
+                                href={section.href}
+                                prefetch
+                                aria-current={current ? 'page' : undefined}
+                                className={cn(
+                                    'relative flex min-h-11 items-center rounded-lg px-3 text-sm',
+                                    current ? 'font-semibold' : 'text-muted-foreground hover:text-foreground hover:bg-white/50',
+                                )}
                             >
-                                <Link href={item.url} prefetch>
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
-                </aside>
-
-
-                <Separator className="my-6 md:hidden" />
-
-
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
-                </div>
+                                {current && (
+                                    <span
+                                        aria-hidden
+                                        className="bg-foreground absolute inset-x-3 -bottom-px h-0.5 rounded-full lg:inset-x-auto lg:inset-y-2.5 lg:left-0 lg:h-auto lg:w-0.5"
+                                    />
+                                )}
+                                {section.title}
+                            </Link>
+                        );
+                    })}
+                </nav>
+                <section className="max-w-xl space-y-12">{children}</section>
             </div>
-        </div>
+        </>
     );
 }
