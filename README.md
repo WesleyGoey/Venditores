@@ -112,7 +112,7 @@ flowchart LR
 | ⭐ | **Vendor rekomendasi** | Daftar vendor dari admin. Di halaman kebutuhan vendor, user memfilter per kategori lalu klik **Add as quote** untuk langsung memasukkannya ke penawaran. |
 | 🕘 | **History** | Menu History menampilkan semua event beserta vendor yang dipakai (per event atau per vendor). Vendor yang pernah dipakai juga muncul di tab **History** saat memilih vendor, dan bisa langsung dijadikan penawaran. |
 | 💭 | **Review vendor** | Setiap user bisa memberi rating 1–5 dan komentar untuk vendor rekomendasi. Satu user hanya satu review per vendor (bisa diubah). |
-| 🔎 | **Cari vendor online** | Tombol **"Find vendors online"** memakai Gemini dengan Google Search untuk mencari vendor sesuai kategori dan lokasi event, lengkap dengan harga perkiraan, kontak, website, dan sumbernya. Hasilnya bisa dijadikan penawaran lewat **"Add as quote"**. |
+| 🔎 | **Cari vendor online** | Tombol **"Find vendors online"** mencari halaman web lewat **Tavily**, lalu Gemini menyusun vendor dari hasil pencarian itu sesuai kategori dan lokasi event, lengkap dengan harga perkiraan, kontak, website, dan sumbernya. Hasilnya bisa dijadikan penawaran lewat **"Add as quote"**. |
 | 💬 | **Penawaran** | Catat manual, dari vendor rekomendasi, atau dari hasil pencarian online. Pilih dengan tombol **Choose**, atau tolak. |
 | 🎯 | **AI matching** | Gemini menilai isi penawaran terhadap spesifikasi. Nama vendor tidak dikirim ke AI. Sistem menilai harga: makin murah makin tinggi. |
 | ⏰ | **Risiko** | Dihitung dari sisa hari menuju acara, tanpa AI. |
@@ -242,6 +242,7 @@ Buka 👉 **http://127.0.0.1:8000**
 | Variabel | Keterangan |
 |---|---|
 | `GEMINI_API_KEY` | Tanpa key, hanya fitur AI yang tidak jalan. |
+| `TAVILY_API_KEY` | Untuk **Find vendors online**. Daftar gratis di [tavily.com](https://tavily.com) (1.000 pencarian per bulan). |
 | `MAIL_MAILER=log` | Email tidak dikirim, link verifikasi ada di `storage/logs/laravel.log`. |
 
 
