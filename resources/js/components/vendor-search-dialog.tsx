@@ -15,6 +15,8 @@ interface FoundVendor {
     website: string | null;
     contact: string | null;
     estimated_price: number | null;
+    /** What estimated_price is charged per (box, orang...). Null means it is the total for the whole job. */
+    price_unit: string | null;
 }
 
 interface Source {
@@ -86,7 +88,7 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                 <DialogHeader>
                     <DialogTitle>Find vendors online</DialogTitle>
                     <DialogDescription>
-                        AI searches Google for <span className="text-foreground font-medium">{category}</span>
+                        AI searches the web for <span className="text-foreground font-medium">{category}</span>
                         {location ? ` near ${location}` : ''}. Check prices with the vendor before choosing.
                     </DialogDescription>
                 </DialogHeader>
@@ -137,7 +139,9 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                                         )}
                                         {vendor.contact && <span>{vendor.contact}</span>}
                                         <span>
-                                            {vendor.estimated_price !== null ? `~ ${formatRupiah(vendor.estimated_price)}` : 'No published price'}
+                                            {vendor.estimated_price !== null
+                                                ? `~ ${formatRupiah(vendor.estimated_price)} ${vendor.price_unit ? `per ${vendor.price_unit}` : 'in total'}`
+                                                : 'No published price'}
                                         </span>
                                     </div>
                                 </div>
@@ -147,7 +151,10 @@ export default function VendorSearchDialog({ eventId, vendorNeedId, category, lo
                                     defaults={{
                                         vendor_name: vendor.name,
                                         vendor_contact: [vendor.contact, vendor.website].filter(Boolean).join(' · '),
-                                        price: vendor.estimated_price !== null ? String(vendor.estimated_price) : '',
+                                        // A per-unit price goes in as the unit price: the total needs a quantity the user has to enter.
+                                        ...(vendor.estimated_price !== null && vendor.price_unit
+                                            ? { unit_price: String(vendor.estimated_price), unit: vendor.price_unit }
+                                            : { price: vendor.estimated_price !== null ? String(vendor.estimated_price) : '' }),
                                         notes: vendor.summary,
                                     }}
                                     trigger={
