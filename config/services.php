@@ -35,6 +35,11 @@ return [
         'timeout' => (int) env('GEMINI_TIMEOUT', 170),
     ],
 
+    'tavily' => [
+        'key' => env('TAVILY_API_KEY'),
+        'base_url' => env('TAVILY_BASE_URL', 'https://api.tavily.com'),
+    ],
+
     'supabase' => [
         'url' => env('SUPABASE_URL'),
         'secret_key' => env('SUPABASE_SECRET_KEY'),

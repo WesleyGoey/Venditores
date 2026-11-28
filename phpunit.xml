@@ -27,6 +27,7 @@
         <env name="FILESYSTEM_DISK" value="local"/>
         <env name="GEMINI_API_KEY" value="testing-gemini-key"/>
         <env name="GEMINI_MODEL" value="gemini-3.5-flash"/>
+        <env name="TAVILY_API_KEY" value="testing-tavily-key"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PROPOSAL_DISK" value="local"/>
         <env name="SUPABASE_URL" value="https://supabase.test"/>

@@ -28,6 +28,27 @@ class GeminiException extends RuntimeException
         return new self('The AI service could not be reached. Please try again later.', 0, $previous);
     }
 
+    public static function missingSearchKey(): self
+    {
+        return new self('The web search API key is not configured. Set TAVILY_API_KEY in your .env file.');
+    }
+
+    public static function searchFailed(int $status, Throwable $previous): self
+    {
+        $message = match (true) {
+            $status === 429 || $status === 432 || $status === 433 => 'The web search limit was reached. Please try again later.',
+            $status >= 500 => 'The web search service is temporarily unavailable. Please try again later.',
+            default => "The web search service rejected the request (HTTP {$status}).",
+        };
+
+        return new self($message, $status, $previous);
+    }
+
+    public static function searchUnreachable(Throwable $previous): self
+    {
+        return new self('The web search service could not be reached. Please try again later.', 0, $previous);
+    }
+
     public static function emptyResponse(): self
     {
         return new self('Gemini returned an empty response.');
