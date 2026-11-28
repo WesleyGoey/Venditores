@@ -3,6 +3,7 @@ import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
+import { PasswordInput } from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
 interface RegisterForm {
+    account_type: 'user' | 'vendor';
     name: string;
     email: string;
     password: string;
@@ -18,6 +20,7 @@ interface RegisterForm {
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
+        account_type: 'user',
         name: '',
         email: '',
         password: '',
@@ -36,6 +39,38 @@ export default function Register() {
             <Head title="Register" />
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
+                    <fieldset className="grid gap-2">
+                        <legend className="mb-2 text-sm font-medium">I am</legend>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                            {(
+                                [
+                                    ['user', 'Planning an event', 'Find vendors and compare offers'],
+                                    ['vendor', 'A vendor', 'List my vendor and read its reviews'],
+                                ] as const
+                            ).map(([value, title, hint]) => (
+                                <label
+                                    key={value}
+                                    className="border-foreground/15 has-[:checked]:border-foreground has-[:focus-visible]:ring-ring flex cursor-pointer flex-col gap-0.5 rounded-lg border bg-white/30 px-3 py-2.5 text-sm has-[:checked]:bg-white/60 has-[:focus-visible]:ring-2"
+                                >
+                                    <span className="flex items-center gap-2 font-medium">
+                                        <input
+                                            type="radio"
+                                            name="account_type"
+                                            value={value}
+                                            checked={data.account_type === value}
+                                            onChange={() => setData('account_type', value)}
+                                            className="accent-foreground"
+                                            tabIndex={1}
+                                        />
+                                        {title}
+                                    </span>
+                                    <span className="text-muted-foreground pl-6 text-xs">{hint}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <InputError message={errors.account_type} />
+                    </fieldset>
+
                     <div className="grid gap-2">
                         <Label htmlFor="name" required>
                             Name
@@ -77,9 +112,8 @@ export default function Register() {
                         <Label htmlFor="password" required>
                             Password
                         </Label>
-                        <Input
+                        <PasswordInput
                             id="password"
-                            type="password"
                             required
                             tabIndex={3}
                             autoComplete="new-password"
@@ -95,9 +129,8 @@ export default function Register() {
                         <Label htmlFor="password_confirmation" required>
                             Confirm password
                         </Label>
-                        <Input
+                        <PasswordInput
                             id="password_confirmation"
-                            type="password"
                             required
                             tabIndex={4}
                             autoComplete="new-password"

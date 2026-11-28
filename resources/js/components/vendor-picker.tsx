@@ -82,7 +82,7 @@ function VendorCard({ eventId, vendorNeedId, name, category, rating, text, price
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <p className="truncate font-semibold">{name}</p>
-                    <span className="bg-primary/10 text-primary mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium">{category}</span>
+                    <span className="text-muted-foreground mt-0.5 block text-xs">{category}</span>
                 </div>
                 {rating}
             </div>
@@ -171,7 +171,7 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                             onClick={() => change(() => setTab(value))}
                             className={cn(
                                 'rounded-lg px-3 py-1.5 font-medium transition-colors',
-                                tab === value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                                tab === value ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
                             )}
                         >
                             {label} <span className="opacity-70">{n}</span>
@@ -193,10 +193,10 @@ export default function VendorPicker({ eventId, vendorNeedId, needCategory, rela
                             onClick={() => change(() => setFilter(value))}
                             aria-pressed={filter === value}
                             className={cn(
-                                'rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors',
+                                'min-h-9 cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
                                 filter === value
-                                    ? 'border-primary bg-primary text-primary-foreground'
-                                    : 'border-white/70 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10',
+                                    ? 'border-foreground bg-foreground text-background'
+                                    : 'border-foreground/15 bg-white/40 hover:bg-white/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10',
                             )}
                         >
                             {label} <span className="opacity-70">{count(tabItems, value)}</span>

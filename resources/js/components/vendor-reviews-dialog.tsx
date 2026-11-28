@@ -20,8 +20,9 @@ export interface ReviewedVendor {
 }
 
 export default function VendorReviewsDialog({ vendor }: { vendor: ReviewedVendor }) {
-    // Admins read reviews but never write them.
-    const canReview = !usePage<SharedData>().props.auth.user.is_admin;
+    // Admins and vendor accounts read reviews but never write them.
+    const { is_admin, is_vendor } = usePage<SharedData>().props.auth.user;
+    const canReview = !is_admin && !is_vendor;
     const byName = vendor.id === undefined;
     const { data, setData, put, processing, errors } = useForm({
         name: vendor.name,

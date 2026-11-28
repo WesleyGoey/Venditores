@@ -19,19 +19,32 @@ type VendorFormData = {
     price_estimate: string;
 };
 
-/** Admin only: add or edit a recommended vendor. */
-export default function VendorFormDialog({ vendor, trigger }: { vendor?: RecommendedVendor; trigger: ReactNode }) {
+/**
+ * Add or edit a recommended vendor. initial pre-fills a new one, such as a vendor a user entered.
+ * mine is the vendor account's own listing: it saves through its own routes and waits for the admin.
+ */
+export default function VendorFormDialog({
+    vendor,
+    initial,
+    mine = false,
+    trigger,
+}: {
+    vendor?: RecommendedVendor;
+    initial?: Partial<VendorFormData>;
+    mine?: boolean;
+    trigger: ReactNode;
+}) {
     const { vendorCategories } = usePage<SharedData>().props;
     const [open, setOpen] = useState(false);
     const isEditing = vendor !== undefined;
 
     const { data, setData, post, patch, processing, errors, reset, clearErrors, setError } = useForm<VendorFormData>({
-        name: vendor?.name ?? '',
-        category: vendor?.category ?? '',
-        description: vendor?.description ?? '',
-        contact: vendor?.contact ?? '',
-        website: vendor?.website ?? '',
-        price_estimate: vendor?.price_estimate != null ? String(vendor.price_estimate) : '',
+        name: vendor?.name ?? initial?.name ?? '',
+        category: vendor?.category ?? initial?.category ?? '',
+        description: vendor?.description ?? initial?.description ?? '',
+        contact: vendor?.contact ?? initial?.contact ?? '',
+        website: vendor?.website ?? initial?.website ?? '',
+        price_estimate: vendor?.price_estimate != null ? String(vendor.price_estimate) : (initial?.price_estimate ?? ''),
     });
 
     const submit: FormEventHandler = (e) => {
@@ -49,6 +62,7 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
             onSuccess: () => {
                 setOpen(false);
 
+
                 if (!isEditing) {
                     reset();
                 }
@@ -56,9 +70,9 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
         };
 
         if (isEditing) {
-            patch(route('vendors.update', vendor.id), options);
+            patch(route(mine ? 'my-vendors.update' : 'vendors.update', vendor.id), options);
         } else {
-            post(route('vendors.store'), options);
+            post(route(mine ? 'my-vendors.store' : 'vendors.store'), options);
         }
     };
 
@@ -74,7 +88,11 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Edit vendor' : 'Add vendor'}</DialogTitle>
-                    <DialogDescription>Users see it on vendor needs with the same category.</DialogDescription>
+                    <DialogDescription>
+                        {mine
+                            ? 'The admin checks it first. Once approved, committees see it as a recommended vendor on needs with the same category.'
+                            : 'Users see it on vendor needs with the same category.'}
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -157,7 +175,9 @@ export default function VendorFormDialog({ vendor, trigger }: { vendor?: Recomme
                         <InputError message={errors.price_estimate} />
                     </div>
                     <DialogFooter>
-                        <Button disabled={processing}>{isEditing ? 'Save' : 'Add vendor'}</Button>
+                        <Button disabled={processing}>
+                            {isEditing ? (mine ? 'Save and send to admin' : 'Save') : mine ? 'Send to admin' : 'Add vendor'}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
