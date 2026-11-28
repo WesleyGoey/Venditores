@@ -38,8 +38,18 @@ class UserFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'is_admin' => true,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a vendor account.
+     */
+    public function vendor(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'is_vendor' => true,
         ]);
     }
 
@@ -48,7 +58,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

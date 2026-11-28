@@ -35,9 +35,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('manage-vendors', fn (User $user): bool => $user->is_admin);
+        Gate::define('manage-vendors', fn(User $user): bool => $user->is_admin);
+        Gate::define('own-vendors', fn(User $user): bool => $user->is_vendor);
 
-        Auth::provider('supabase', fn (Application $app, array $config): SupabaseUserProvider => new SupabaseUserProvider(
+        Auth::provider('supabase', fn(Application $app, array $config): SupabaseUserProvider => new SupabaseUserProvider(
             $app['hash'],
             $config['model'],
             $app->make(SupabaseAuth::class),
@@ -53,13 +54,13 @@ class AppServiceProvider extends ServiceProvider
     private function configureRealtime(): void
     {
         foreach ([Event::class, VendorNeed::class, Quote::class] as $model) {
-            $model::saved(fn (Model $changed) => app(RealtimeNotifier::class)->changed($changed));
-            $model::deleted(fn (Model $changed) => app(RealtimeNotifier::class)->changed($changed));
+            $model::saved(fn(Model $changed) => app(RealtimeNotifier::class)->changed($changed));
+            $model::deleted(fn(Model $changed) => app(RealtimeNotifier::class)->changed($changed));
         }
 
         foreach ([RecommendedVendor::class, VendorReview::class] as $model) {
-            $model::saved(fn () => app(RealtimeNotifier::class)->vendorsChanged());
-            $model::deleted(fn () => app(RealtimeNotifier::class)->vendorsChanged());
+            $model::saved(fn() => app(RealtimeNotifier::class)->vendorsChanged());
+            $model::deleted(fn() => app(RealtimeNotifier::class)->vendorsChanged());
         }
     }
 
@@ -75,9 +76,9 @@ class AppServiceProvider extends ServiceProvider
         ];
 
         foreach ($limits as $name => $perMinute) {
-            RateLimiter::for($name, fn (Request $request): Limit => Limit::perMinute($perMinute)
+            RateLimiter::for($name, fn(Request $request): Limit => Limit::perMinute($perMinute)
                 ->by($request->user()?->id ?: $request->ip())
-                ->response(fn (Request $request) => $request->expectsJson()
+                ->response(fn(Request $request) => $request->expectsJson()
                     ? response()->json(['message' => 'Too many AI requests. Please wait a minute and try again.'], 429)
                     : back()->with('error', 'Too many AI requests. Please wait a minute and try again.')));
         }

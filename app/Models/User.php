@@ -33,6 +33,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $attributes = [
         'is_admin' => false,
+        'is_vendor' => false,
     ];
 
     protected $hidden = [
@@ -52,7 +53,18 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'is_vendor' => 'boolean',
         ];
+    }
+
+    /**
+     * The vendors this account listed, when it is a vendor account.
+     *
+     * @return HasMany<RecommendedVendor, $this>
+     */
+    public function ownedVendors(): HasMany
+    {
+        return $this->hasMany(RecommendedVendor::class);
     }
 
     /**

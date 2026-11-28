@@ -7,13 +7,15 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Admins only manage vendors. Events, budgets and quotes belong to regular users.
+ * Admins and vendor accounts only deal with the vendor directory. Events, budgets and quotes belong to regular users.
  */
 class RedirectAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user()?->is_admin) {
+        $user = $request->user();
+
+        if ($user?->is_admin || $user?->is_vendor) {
             return redirect()->route('vendors.index');
         }
 

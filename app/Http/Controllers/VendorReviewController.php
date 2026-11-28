@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\QuoteStatus;
+use App\Enums\VendorStatus;
 use App\Models\Quote;
 use App\Models\RecommendedVendor;
 use App\Models\User;
@@ -18,7 +19,8 @@ class VendorReviewController extends Controller
      */
     public function store(Request $request, RecommendedVendor $vendor): RedirectResponse
     {
-        abort_if($request->user()->is_admin, 403, 'Admins cannot review vendors.');
+        abort_if($request->user()->is_admin || $request->user()->is_vendor, 403, 'Admins and vendors cannot review vendors.');
+        abort_unless($vendor->status === VendorStatus::Approved, 404);
 
         $data = $request->validate([
             'rating' => ['required', 'integer', 'between:1,5'],
@@ -44,7 +46,7 @@ class VendorReviewController extends Controller
     public function storeByName(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_if($user->is_admin, 403, 'Admins cannot review vendors.');
+        abort_if($user->is_admin || $user->is_vendor, 403, 'Admins and vendors cannot review vendors.');
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -92,6 +94,6 @@ class VendorReviewController extends Controller
 
     private function recommendedNamed(string $key): ?RecommendedVendor
     {
-        return RecommendedVendor::query()->where(DB::raw('lower(name)'), $key)->first();
+        return RecommendedVendor::query()->approved()->where(DB::raw('lower(name)'), $key)->first();
     }
 }

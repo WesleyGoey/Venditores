@@ -42,6 +42,7 @@ class VendorNeedController extends Controller
             ],
             'vendorNeed' => $vendorNeed,
             'recommendedVendors' => RecommendedVendor::query()
+                ->approved()
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
                 ->orderByRaw('lower(category)')
